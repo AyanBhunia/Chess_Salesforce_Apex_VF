@@ -1,0 +1,357 @@
+<apex:page controller="Chess">
+    <head>
+        <style>
+            :root {
+              --n: 60px;
+              --m: 60px;
+            }
+
+            .left_right{
+                display: flex;
+            }
+
+            @media (max-width:1200px) {
+            .left_right{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            }
+            .chessBoard {
+                /* width: calc(var(--n)*9);
+                height: calc(var(--n)*9); */
+                display: inline-grid;
+                grid-template-columns: repeat(8, 1fr);
+                border: 4px solid black;
+                align-items: center;
+            }
+
+            .square {
+                width: var(--n);
+                height: var(--n);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 4em; /* Adjust size of chess pieces */
+                border: 2px solid black;
+            }
+            
+            .piece {
+                user-select: none; /* Prevents text selection */
+                display: flex;
+                width: var(--n);
+                height: var(--n);
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .up, .down, .left, .right{
+                background: radial-gradient(circle at 50% 100%, #260e0e80 5%, #260e0e 5% 10%, #260e0e80 10% 15%, #260e0e 15% 20%, #260e0e80 20% 25%, #260e0e 25% 30%, #260e0e80 30% 35%, #260e0e 35% 40%, transparent 40%), radial-gradient(circle at 100% 50%, #260e0e80 5%, #260e0e 5% 10%, #260e0e80 10% 15%, #260e0e 15% 20%, #260e0e80 20% 25%, #260e0e 25% 30%, #260e0e80 30% 35%, #260e0e 35% 40%, transparent 40%), radial-gradient(circle at 50% 0%, #260e0e80 5%, #260e0e 5% 10%, #260e0e80 10% 15%, #260e0e 15% 20%, #260e0e80 20% 25%, #260e0e 25% 30%, #260e0e80 30% 35%, #260e0e 35% 40%, transparent 40%), radial-gradient(circle at 0 50%, #260e0e80 5%, #260e0e 5% 10%, #260e0e80 10% 15%, #260e0e 15% 20%, #260e0e80 20% 25%, #260e0e 25% 30%, #260e0e80 30% 35%, #260e0e 35% 40%, transparent 40%);
+                background-size: 3em 3em;
+                background-color: #824f4f;
+                opacity: 1;
+                background-position: -0.4% 19%;
+            }
+
+            .up, .down {
+                /* width: var(--m); */
+                /* height: var(--m); */
+                display: flex;
+                padding-left: var(--m);
+                padding-right: var(--m);
+                justify-content: space-evenly;
+            }
+
+            .left, .right{
+                /* width: var(--m); */
+                /* height: var(--m); */
+                display: flex;
+                justify-content: space-evenly;
+                flex-direction: column;
+            }
+
+            .box{
+                /* border: 2px solid black; */
+                width: var(--m);
+                height: var(--m);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                /* background-color: white; */
+                color: white;
+                font-size: 2em;
+            }
+
+
+            .white {
+                background-color: white;
+            }
+
+            .black {
+                background-color: gray;
+            }
+
+            .avail{
+                background-color: aqua;
+            }
+
+            .target{
+                background-color: greenyellow;
+            }
+
+            .enemy{
+                background-color: crimson;
+            }
+
+            .move_grid{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                width: 300px;
+                padding-left: 50px;
+            }
+            .move_grid_text{
+                height: 25px;
+            }
+
+        </style>
+        <script>
+            function remove_class(str){
+                var elems = document.querySelectorAll('.'+str);
+
+                [].forEach.call(elems, function (el) {
+                    el.classList.remove(str);
+                });
+            }
+
+            function box_onclick(event){
+                console.log(event.target.id);
+
+                if (event.target.classList.contains('avail') && document.querySelectorAll('.target').length==1) {
+                    call_move(document.querySelectorAll('.target')[0].querySelector('.piece').id, event.target.id);
+                    }
+                else
+                {
+                    if(event.target.querySelector('piece')!=null)
+                    {
+                        put_color(event);
+                    }
+                }
+                
+            }
+
+            function call_move(data,target)
+            {
+                console.log(data,target);
+                var piece = document.getElementById(data);
+                var fromSquare = piece.closest('.square'); //parent div
+                var toSquare = document.getElementById(target);
+
+                // Check if the event.target is the piece or the square
+                if (toSquare.classList.contains('piece')) {
+                    toSquare = event.target.closest('.square');
+                    event.target.remove(); //remove old piece
+                }
+
+                toSquare.appendChild(document.getElementById(data));
+
+                var fromX = fromSquare.getAttribute('data-x');
+                var fromY = fromSquare.getAttribute('data-y');
+                var toX = toSquare.getAttribute('data-x');
+                var toY = toSquare.getAttribute('data-y');
+
+                remove_class('avail');
+                remove_class('target');
+                remove_class('enemy');
+
+                console.log('drop now updateBoard ' + fromX + ',' + fromY + ',' + ',' + toX + ',' + toY);
+
+                // Update the board using JavaScript Remoting
+                Chess.updateBoard(
+                    parseInt(fromX),
+                    parseInt(fromY),
+                    parseInt(toX),
+                    parseInt(toY),
+                    function (result, ev) {
+                        if (ev.status) {
+                            console.log(ev.status);
+                            console.log(result);
+                            if (result != 'okay') {
+                                rerenderchessBoardPanel();
+                            }
+                        }
+                    }
+                );
+            }
+
+            function put_color(event){
+                var pos = event.target;
+
+                // if (pos.classList.contains('piece')) {
+                //     pos = event.target.closest('.square');
+                // }
+
+                var X = pos.getAttribute('data-x');
+                var Y = pos.getAttribute('data-y');
+
+                Chess.updateAvailable(
+                    parseInt(X),
+                    parseInt(Y),
+                    function (result, ev) {
+                        if (ev.status) {
+                            console.log(ev.status);
+                            console.log(result);
+
+                            remove_class('avail');
+                            remove_class('target');
+                            remove_class('enemy');
+
+                            pos.classList.add('target');
+
+                            if(result.list_x.length>0)
+                            {
+                                result.list_x.forEach(element => {
+                                    document.getElementById(element.x + '_' + element.y + '_square').classList.add('avail');
+                                });
+                            }
+                            if (result.list_y.length > 0) {
+                                result.list_y.forEach(element => {
+                                    document.getElementById(element.x + '_' + element.y + '_square').classList.add('enemy');
+                                });
+                            }
+                        }
+                    }
+                );
+            }
+
+            function allowDrop(event) {
+                event.preventDefault();
+            }
+
+            function drag(event) {
+                put_color(event);
+                event.dataTransfer.setData("text", event.target.id);
+            }
+
+            function drop(event) {
+                event.preventDefault();
+
+                var data = event.dataTransfer.getData("text");
+
+                console.log(data);
+                console.log(event);
+
+                if(event.target.id==data)
+                {
+                    return;
+                }
+
+                call_move(data, event.target.id);
+            }
+        </script>
+    </head>
+
+    <body>
+        <apex:form >
+            <apex:actionFunction name="rerenderchessBoardPanel" action="{!initialize_board}" rerender="chessBoardPanel" />
+            <apex:commandButton value="Update Board" action="{!initialize_board}" reRender="chessBoardPanel" />
+            <apex:commandButton value="set new board" action="{!setnewboard}" reRender="chessBoardPanel"/>
+        </apex:form>
+
+        <div class="left_right">
+
+            <div style="display: inline-grid;justify-content: center;">
+                <apex:outputPanel style="display: inline-flex;border-top: 3px solid black;">
+                    <div style=" width: 40px; background-color: black; height: 40px; "></div>
+                    <div>
+                    <div style=" font-size: x-large; font-weight: bold; ">Black</div>
+                    <div style="display: inline-flex;">
+                        <apex:repeat value="{!blacklist}" var="xxx">
+                            <div>{!xxx}</div>
+                        </apex:repeat>
+                    </div>
+                    </div>
+                </apex:outputPanel>
+
+                <apex:outputPanel id="chessBoardPanel" style="display: inline-grid;border: 3px solid black;">
+
+                    <div id="up_" class="up">
+                        <apex:repeat value="{!list_to_iterate}" var="x">
+                            <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G', IF(x == 7, 'H', ''))))))))}</div>
+                        </apex:repeat>
+                    </div>
+
+                    <div style=" display: flex; ">
+                        <div id="left" class="left">
+                            <apex:repeat value="{!list_to_iterate}" var="x">
+                                <div class="box">{!8-x}</div>
+                            </apex:repeat>
+                        </div>
+
+                        <div id="chessBoard" class="chessBoard">
+                            <apex:variable value="{!0}" var="counter_x" />
+                            <apex:repeat value="{!board}" var="row"> 
+                                <apex:variable value="{!0}" var="counter_y" />
+                                <apex:repeat value="{!row}" var="cell">
+                                    <!-- <div>{!counter_x}</div> -->
+                                    <div id="{!counter_x}_{!counter_y}_square" class="square {!IF(MOD(counter_x, 2)+MOD(counter_y,2) != 1, 'white', 'black')}" onclick="box_onclick(event)" ondrop="drop(event)" ondragover="allowDrop(event)" data-x="{!counter_x}" data-y="{!counter_y}">
+                                            <!-- <p style="font-size:35%;"> -->
+                                                <!-- {!counter_x}, {!counter_y} -->
+                                                <!-- {!board[counter_x][counter_y]} -->
+                                            <!-- </p> -->
+                                            <c:chessPiece pieceValue="{!cell}" unique="{!counter_x}{!counter_y}" />
+                                    </div>
+                                    <apex:variable value="{!counter_y + 1}" var="counter_y" />
+                                </apex:repeat>
+                                <apex:variable value="{!counter_x + 1}" var="counter_x" />
+                            </apex:repeat>
+                        </div>
+
+                        <div id="right" class="right">
+                            <apex:repeat value="{!list_to_iterate}" var="x">
+                                <div class="box">{!8-x}</div>
+                            </apex:repeat>
+                        </div>
+                    </div>
+
+                    <div id="down" class="down">
+                        <apex:repeat value="{!list_to_iterate}" var="x">
+                            <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G', IF(x ==7, 'H', ''))))))))}</div>
+                        </apex:repeat>
+                    </div>
+
+
+                </apex:outputPanel>
+
+                <apex:outputPanel style="display: inline-flex;border-bottom: 3px solid black;">
+                    <div style=" width: 40px; background-color: black; height: 40px; "></div>
+                    <div>
+                        <div style=" font-size: x-large; font-weight: bold; ">White</div>
+                        <div style="display: inline-flex;">
+                            <apex:repeat value="{!whitelist}" var="xxx">
+                                <div>{!xxx}</div>
+                            </apex:repeat>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+            </div>
+
+            <apex:outputPanel>
+                <div class="move_grid">
+                    <apex:repeat value="{!chess_moves}" var='row'>
+                        <!-- <div> -->
+                            <apex:outputPanel rendered="{!MOD(row.row__c,2)==1}">
+                                <div class="move_grid_text">{!(row.row__c+1) / 2}.</div>
+                            </apex:outputPanel>
+                            <div class="move_grid_text">{!row.text__c}</div>
+                        <!-- </div> -->
+                    </apex:repeat>
+                </div>
+            </apex:outputPanel>
+        </div>
+
+
+
+        
+    </body>
+
+</apex:page>
