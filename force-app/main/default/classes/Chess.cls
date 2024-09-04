@@ -9,6 +9,14 @@ public class Chess {
             this.y = y;
         }
 
+        public Integer getX() {
+            return x;
+        }
+
+        public Integer getY() {
+            return y;
+        }
+
         // Override equals method
         public Boolean equals(Object obj) {
             if (obj == null) {
@@ -34,10 +42,12 @@ public class Chess {
     public class pair_list{
         public list<pair> list_x;
         public list<pair> list_y;
+        public list<pair> list_z;
 
-        public pair_list(list<pair> list_x, list<pair> list_y) {
+        public pair_list(list<pair> list_x, list<pair> list_y, list<pair> list_z) {
             this.list_x = list_x;
             this.list_y = list_y;
+            this.list_z=list_z;
         }
     }
 
@@ -163,8 +173,11 @@ public class Chess {
 
     public static List<pair> avail_array = new List<pair>();
     public static List<pair> enemy_array = new List<pair>();
-
-    public static Integer check=0;
+    public static List<pair> avail_2nd_array = new List<pair>();
+    
+    public static Integer game_type=0; // game type 0 - normal, 1 - portal
+    
+    public static pair check {get;set;}
     public static List<Integer> list_to_iterate{get;set;}
     
     public static List<List<integer>> board {get;set;}
@@ -176,6 +189,7 @@ public class Chess {
 
     public Chess(){
         initialize_board();
+        initialize_board_moves();
     }
 
     public static void initialize_board(){
@@ -189,9 +203,20 @@ public class Chess {
             board.add(row);
         }
 
+        check=new pair(0,0); // black,white 
+    }
+
+    public static void initialize_board_moves(){
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c FROM chessBoardMove__c ORDER BY name ASC];
-        // system.debug(chess_moves);    
+        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c,check__c FROM chessBoardMove__c ORDER BY name ASC];
+
+        if (chess_moves.size()>0) {
+            check=new pair((Integer)chess_moves[chess_moves.size()-1].check__c/10,(Integer)chess_moves[chess_moves.size()-1].check__c);
+        }
+        
+
+        system.debug(check);   
+
         blacklist=new List<String>();
         whitelist=new List<String>();
         for (chessBoardMove__c row : chess_moves) {
@@ -204,8 +229,6 @@ public class Chess {
                 }
             }
         }
-
-        System.debug('initial');
     }
 
 
@@ -238,97 +261,72 @@ public class Chess {
 
         delete [SELECT Id FROM chessBoardMove__c];
         
+        initialize_board_moves();
+    }
+
+    @RemoteAction
+    public static void back_back()
+    {
+        initialize_board();
+
+        chess_moves =new list<chessBoardMove__c>();
+        chess_moves= [SELECT row__c,color__c, from_x__c,from_y__c,to_x__c,to_y__c,capture__c,check__c FROM chessBoardMove__c ORDER BY row__c DESC LIMIT 1];
+        
+        if (chess_moves.size()==0) {
+            return;
+        }
+
+        setValueAt((Integer)chess_moves[0].from_x__c,(Integer)chess_moves[0].from_y__c,getValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c));
+        setValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c,(Integer)chess_moves[0].capture__c);
+
+        update chessBoardRecords[(Integer)chess_moves[0].to_x__c];
+        update chessBoardRecords[(Integer)chess_moves[0].from_x__c];
+
+        delete chess_moves[0];
     }
      
-    public static void updateChessBoardRecord(Integer fromX, Integer fromY, Integer toX, Integer toY) 
-    {
-        setValueAt(toX,toY,getValueAt(fromX,fromY));
-        update chessBoardRecords[tox];
 
-        setValueAt(fromX,fromY,0);
-        update chessBoardRecords[fromX];
+    public static void check_if_check()
+    {
+        
+        Integer b_king_check = 0;
+        Integer w_king_check = 0;
+        check.x=0;
+        check.y=0;
+
+        King king=new King();
+
+        integer t=2;
+        for (Integer x = 0; x < 8 && t!=0; x++) {
+            for (Integer y = 0; y < 8 && t!=0; y++) {
+                if (board[x][y]==6) // check for black
+                { 
+                    b_king_check=king.check_check(0, x, y);
+                    t=t-1;
+                    if (b_king_check==1) {
+                        check.x=1;
+                    }
+                }
+                if (board[x][y]==16) // check for white
+                {
+                    w_king_check=king.check_check(1, x, y);
+                    t=t-1;
+                    if (w_king_check==1) {
+                        check.y=1;
+                    }
+                }
+            }
+        }
     }
 
     @RemoteAction
     public static String updateBoard(Integer fromX, Integer fromY, Integer toX, Integer toY) {
-        initialize_board();
-        System.debug('entered update board');
-        System.debug('x= '+fromX+', y='+fromY+'; 1st='+board[fromX][fromY]+', p='+toX+', q='+toY+'; 2nd='+board[toX][toY]);
-        system.debug(math.mod(board[fromX][fromY],10));
-
-        Boolean check_if_valid=false;
         
-        switch on math.mod(board[fromX][fromY],10)
-        {
-            when 1
-            {
-                Pawn pawn=new Pawn();
-                pawn.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain pawn');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-            when 2
-            {
-                Rock rock=new Rock();
-                rock.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain rock');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-            when 3
-            {
-                Knight knight=new Knight();
-                knight.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain knight');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-            when 4
-            {
-                Bishop bishop =new Bishop();
-                bishop.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain bishop');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-            when 5
-            {
-                Queen queen=new Queen();
-                queen.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain queen');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-            when 6
-            {
-                King king=new King();
-                king.path(fromX, fromY);
-                if(avail_array.contains(new pair(toX,toY)))
-                {
-                    System.debug('contain king');
-                    updateChessBoardRecord(fromX,fromY,toX,toY);
-                    check_if_valid=true;
-                }
-            }
-        }
+        find_available_positions(fromX, fromY);
+        
+        toX=Math.mod(ToX+8,8);
 
-        if(check_if_valid)
+        if(avail_array.contains(new pair(toX,toY)) || avail_2nd_array.contains(new pair(toX,toY)))
         {
             integer count =[select count() from chessBoardMove__c];
 
@@ -342,65 +340,197 @@ public class Chess {
             new_move.to_x__c=toX;
             new_move.to_y__c=toY;
             new_move.capture__c=board[toX][toY];
-            new_move.check__c= check;
+            new_move.check__c= 0;
 
+            setValueAt(toX,toY,getValueAt(fromX,fromY));
+            setValueAt(fromX,fromY,0);
+            board[tox][toY]=board[fromX][fromY];
+            board[fromX][fromY]=0;
+            
+            if(game_type==0)
+            {
+            	check_if_check();
+            }
+            
+            system.debug('check '+check);
+            system.debug(new_move);
+            if (check.x==1) {
+                if (new_move.color__c == 0) {
+                    System.debug('black is gone in self check ');
+                    return 'need to update';
+                }
+                else {
+                    System.debug('black got check ');
+                    new_move.check__c+=10;
+                }
+            }
+            else if (check.y==1) {
+                if (new_move.color__c == 1) {
+                    System.debug('white is gone in self check ');
+                    return 'need to update';
+                }
+                else {
+                    System.debug('white got check ');
+                    new_move.check__c+=1;
+                }
+            }
+            
+            update chessBoardRecords[tox];
+            update chessBoardRecords[fromX];
             insert new_move;
 
+            system.debug('inserted new move');
 
-            return 'okay';
+            string fen = board_to_fen(fromX,fromY,String.valueof(new_move.row__c),(Integer)new_move.color__c);
+
+            return check.x+''+check.y+' '+fen;
         }
         
-        system.debug(avail_array);
-        system.debug('enteret update board '+fromX+','+fromY + ',' +',' +toX + ',' +toY);
+        // system.debug(avail_array);
+        // system.debug('enteret update board '+fromX+','+fromY + ',' +',' +toX + ',' +toY);
 
-        return 'no need to update';
+        return 'need to update';
     }
 
     @RemoteAction
     public static pair_list updateAvailable(Integer fromX, Integer fromY) {
+
+        find_available_positions(fromX, fromY);
+        
+        // system.debug('enteret update available '+fromX+','+fromY);
+
+        return new pair_list(avail_array,enemy_array,avail_2nd_array);
+    }   
+
+    public static void find_available_positions(Integer fromX, Integer fromY)
+    {
         initialize_board();
-        System.debug('entered update board');
-        System.debug('x= '+fromX+', y='+fromY+'; 1st='+board[fromX][fromY]);
-        system.debug(math.mod(board[fromX][fromY],10));
+        // System.debug('entered avaiable');
+        // System.debug('x= '+fromX+', y='+fromY+'; 1st='+board[fromX][fromY]);
+        // system.debug(math.mod(board[fromX][fromY],10));
         
         switch on math.mod(board[fromX][fromY],10)
         {
             when 1
             {
                 Pawn pawn=new Pawn();
-                pawn.path(fromX, fromY);
+                pawn.path(board[fromX][fromY]/10,fromX, fromY);
             }
             when 2
             {
                 Rock rock=new Rock();
-                rock.path(fromX, fromY);
+                rock.path(board[fromX][fromY]/10,fromX, fromY);
             }
             when 3
             {
                 Knight knight=new Knight();
-                knight.path(fromX, fromY);
+                knight.path(board[fromX][fromY]/10,fromX, fromY);
             }
             when 4
             {
                 Bishop bishop =new Bishop();
-                bishop.path(fromX, fromY);
+                bishop.path(board[fromX][fromY]/10,fromX, fromY);
             }
             when 5
             {
                 Queen queen=new Queen();
-                queen.path(fromX, fromY);
+                queen.path(board[fromX][fromY]/10,fromX, fromY);
             }
             when 6
             {
                 King king=new King();
-                king.path(fromX, fromY);
+                king.path(board[fromX][fromY]/10,fromX, fromY);
             }
         }
-        system.debug('enteret update board '+fromX+','+fromY);
+    }
 
-        return new pair_list(avail_array,enemy_array);
-    }   
+    public static string board_to_fen(Integer fromX, Integer fromY,string move_count, integer color)
+    {
+        initialize_board();
+        string fen='';
+        integer x,y,count;
+        for(x=0;x<8;x++)
+        {
+            count=0;
+            for(y=0;y<8;y++)
+            {
+                if (board[x][y]==0) {
+                    count+=1;
+                } 
+                else {
+                    if(count>0)
+                    {
+                        fen+=count+'';
+                        count=0;
+                    }
+                    
+                    switch on board[x][y]
+                    {
+                        when 1 {
+                            fen+='p'; count=0; // Black Pawn
+                        }
+                        when 2 {
+                            fen+='r'; count=0; // Black Rook
+                        }
+                        when 3 {
+                            fen+='n'; count=0; // Black Knight
+                        }
+                        when 4 {
+                            fen+='b'; count=0; // Black Bishop
+                        }
+                        when 5 {
+                            fen+='q'; count=0; // Black Queen
+                        }
+                        when 6 {
+                            fen+='k'; count=0; // Black King
+                        }
+                        when 11 {
+                            fen+='P'; count=0; // White Pawn
+                        }
+                        when 12 {
+                            fen+='R'; count=0; // White Rook
+                        }
+                        when 13 {
+                            fen+='N'; count=0; // White Knight
+                        }
+                        when 14 {
+                            fen+='B'; count=0; // White Bishop
+                        }
+                        when 15 {
+                            fen+='Q'; count=0; // White Queen
+                        }
+                        when 16 {
+                            fen+='K'; count=0; // White King
+                        }
+                    }
+                }
+            }
+            if(count>0)
+            {
+                fen+=count+'';
+                count=0;
+            }
+            if (x<7) {
+                fen+='/';
+            }
+        }
+        fen+=' ';
+        fen+=color==1?'b':'w';
+        fen+=' - - 0 '+move_count;
 
+        // System.debug(board);
+        // System.debug(fen);
+
+        return fen;
+    }
+
+    @RemoteAction
+    public static string check_for_check()
+    {
+        initialize_board();
+        check_if_check();
+        return check.x+''+check.y;
+    }
 
 
     public abstract class pieces{
@@ -409,56 +539,93 @@ public class Chess {
         // string name;
         integer n=0;
         public string temp;
-        public abstract void path(integer x, integer y);
+        public abstract void path(integer color,integer x, integer y);
         
-        public string valid_check(integer x,integer y,integer p,integer q){
-            if(p<0 || p>7 || q<0 || q>7)
+        public string valid_check(integer color,integer x,integer y,integer p,integer q){
+            
+                system.debug(p);
+            if(p>=0 && p<=7)
             {
-                return 'next';
-            }
-            if(board[p][q]==0)
-            {
-                avail_array.add(new pair(p,q));
-                return 'next';
-            }
-            else
-            {
-                if(board[x][y]/10 == board[p][q]/10)
+            system.debug('sdsdsdsdsd');
+                if(p<0 || p>7 || q<0 || q>7)
                 {
-                    return 'block';
+                    return 'next';
                 }
-                else {
+                
+                if(board[p][q]==0)
+                {
                     avail_array.add(new pair(p,q));
-                    if (math.mod(board[p][q],10)==6) {
-                        check=1;
+                    return 'next';
+                }
+                else
+                {
+                    if(color == board[p][q]/10)
+                    {
+                        return 'block';
                     }
-                    enemy_array.add(new pair(p,q));
-                    return 'attack';
+                    else {
+                        avail_array.add(new pair(p,q));
+                        enemy_array.add(new pair(p,q));
+                        return 'attack';
+                    }
                 }
             }
+            system.debug('dfg');
+            if(game_type==1)
+            {
+                
+                system.debug('jjj'+q);
+                if(p<-8 || p>15 || q<0 || q>7)
+                {
+                    return 'next';
+                }
+
+                p=math.mod(p+8,8);
+
+                if(board[p][q]==0)
+                {
+                    avail_2nd_array.add(new pair(p,q));
+                    return 'next';
+                }
+                else
+                {
+                    if(color == board[p][q]/10)
+                    {
+                        return 'block';
+                    }
+                    else {
+                        // avail_array.add(new pair(p,q));
+                        // enemy_array.add(new pair(p,q));
+                        return 'attack';
+                    }
+                }
+            }
+                return 'else';
+            
         }
+        
         
         
         
     }
     
     public class Pawn extends pieces{
-        public override void path(integer x, integer y){
-            if(board[x][y]<10) //black
+        public override void path(integer color,integer x, integer y){
+            if(color==0) //black
             {
-                if (x==1  && board[x+2][y]==0) {
-                    valid_check(x, y, x+2, y);
+                if (x==1  && board[x+2][y]==0 && board[x+1][y]==0) {
+                    valid_check(color,x, y, x+2, y);
                 }
                 if (x<7) {
                     if (board[x+1][y]==0) {
-                        valid_check(x, y, x+1, y);
+                        valid_check(color,x, y, x+1, y);
                     }
                 
                     if (y<7 && board[x+1][y+1]>10){
-                        valid_check(x, y, x+1, y+1);
+                        valid_check(color,x, y, x+1, y+1);
                     }
                     if (y>0 && board[x+1][y-1]>10){
-                        valid_check(x, y, x+1, y-1);
+                        valid_check(color,x, y, x+1, y-1);
                     }
                 }
                 // if(x==6)
@@ -466,21 +633,21 @@ public class Chess {
                 //     //promote
                 // }
             }
-            else if(board[x][y]>10) //white
+            else if(color==1) //white
             {
-                if (x==6  && board[x-2][y]==0) {
-                    valid_check(x, y, x-2, y);
+                if (x==6  && board[x-2][y]==0 && board[x-1][y]==0) {
+                    valid_check(color,x, y, x-2, y);
                 }
                 if (x>0) {
                     if (board[x-1][y]==0) {
-                        valid_check(x, y, x-1, y);
+                        valid_check(color,x, y, x-1, y);
                     }
                 
                     if (y<7 && board[x-1][y+1]<10 && board[x-1][y+1]!=0){
-                        valid_check(x, y, x-1, y+1);
+                        valid_check(color,x, y, x-1, y+1);
                     }
                     if (y>0 && board[x-1][y-1]<10 && board[x-1][y-1]!=0){
-                        valid_check(x, y, x-1, y-1);
+                        valid_check(color,x, y, x-1, y-1);
                     }
                 }
                 // if(x==6)
@@ -492,31 +659,31 @@ public class Chess {
     }
     
     public class Rock extends pieces{
-        public override void path(integer x, integer y){
-            for(n=1; x-n>=0; n++)
+        public override void path(integer color,integer x, integer y){
+            for(n=1; x-n>=-8; n++)
             {
-                temp=valid_check(x, y, x-n, y);
+                temp=valid_check(color,x, y, x-n, y);
                 if (temp!='next') {
                     break;
                 }
             }
-            for(n=1; x+n<=7; n++)
+            for(n=1; x+n<=15; n++)
             {
-                temp=valid_check(x, y, x+n, y);
+                temp=valid_check(color,x, y, x+n, y);
                 if (temp!='next') {
                     break;
                 }
             }
             for(n=1; y-n>=0; n++)
             {
-                temp=valid_check(x, y, x, y-n);
+                temp=valid_check(color,x, y, x, y-n);
                 if (temp!='next') {
                     break;
                 }
             }
             for(n=1; y+n<=7; n++)
             {
-                temp=valid_check(x, y, x, y+n);
+                temp=valid_check(color,x, y, x, y+n);
                 if (temp!='next') {
                     break;
                 }
@@ -525,47 +692,47 @@ public class Chess {
     }
     
     public class Knight extends pieces{
-        public override void path(integer x, integer y){
-            valid_check(x, y,x-2,y-1);
-            valid_check(x, y,x-1,y-2);
-            valid_check(x, y,x+1,y-2);
-            valid_check(x, y,x+2,y-1);
-            valid_check(x, y,x-2,y+1);
-            valid_check(x, y,x-1,y+2);
-            valid_check(x, y,x+1,y+2);
-            valid_check(x, y,x+2,y+1);
+        public override void path(integer color,integer x, integer y){
+            valid_check(color,x, y,x-2,y-1);
+            valid_check(color,x, y,x-1,y-2);
+            valid_check(color,x, y,x+1,y-2);
+            valid_check(color,x, y,x+2,y-1);
+            valid_check(color,x, y,x-2,y+1);
+            valid_check(color,x, y,x-1,y+2);
+            valid_check(color,x, y,x+1,y+2);
+            valid_check(color,x, y,x+2,y+1);
         }
     }
     
     public class Bishop extends pieces{
-        public override void path(integer x, integer y){
-            for(n=1; x-n>=0 && y-n>=0; n++)
+        public override void path(integer color,integer x, integer y){
+            for(n=1; x-n>=-8 || y-n>=0; n++)
             {
-                temp=valid_check(x, y, x-n, y-n);
+                temp=valid_check(color,x, y, x-n, y-n);
                 if(temp!='next')
                 {
                     break;
                 }
             }
-            for(n=1; x+n<=7 && y-n>=0; n++)
+            for(n=1; x+n<=15 || y-n>=0; n++)
             {
-                temp=valid_check(x, y, x+n, y-n);
+                temp=valid_check(color,x, y, x+n, y-n);
                 if(temp!='next')
                 {
                     break;
                 }
             }
-            for(n=1; x+n<=7 && y+n<=7; n++)
+            for(n=1; x+n<=-8 || y+n<=7; n++)
             {
-                temp=valid_check(x, y, x+n, y+n);
+                temp=valid_check(color,x, y, x+n, y+n);
                 if(temp!='next')
                 {
                     break;
                 }
             }
-            for(n=1; x-n>=0 && y+n<=7; n++)
+            for(n=1; x-n>=15 || y+n<=7; n++)
             {
-                temp=valid_check(x, y, x-n, y+n);
+                temp=valid_check(color,x, y, x-n, y+n);
                 if(temp!='next')
                 {
                     break;
@@ -575,39 +742,72 @@ public class Chess {
     }
     
     public class Queen extends pieces{
-        public override void path(integer x, integer y){
-            new rock().path( x,  y);
-            new bishop().path( x,  y);
+        public override void path(integer color,integer x, integer y){
+            new Rock().path( color, x,  y);
+            new Bishop().path( color, x,  y);
         }
     }
     
     public class King extends pieces{
-        public override void path(integer x, integer y){
-            valid_check(x, y,x-1,y-1);
-            valid_check(x, y,x-1,y);
-            valid_check(x, y,x-1,y+1);
-            valid_check(x, y,x,y-1);
-            valid_check(x, y,x,y+1);
-            valid_check(x, y,x+1,y-1);
-            valid_check(x, y,x+1,y);
-            valid_check(x, y,x+1,y+1);
+        public override void path(integer color,integer x, integer y){
+            valid_check(color,x, y,x-1,y-1);
+            valid_check(color,x, y,x-1,y);
+            valid_check(color,x, y,x-1,y+1);
+            valid_check(color,x, y,x,y-1);
+            valid_check(color,x, y,x,y+1);
+            valid_check(color,x, y,x+1,y-1);
+            valid_check(color,x, y,x+1,y);
+            valid_check(color,x, y,x+1,y+1);
+        }
+
+        public integer check_check(integer color,integer x,integer y){
+            enemy_array.clear();
+            new Rock().path( color, x,  y);
+            for (pair t : enemy_array) {
+                if (color==1 && (board[t.x][t.y]==2 || board[t.x][t.y]==5) || 
+                color==0 && (board[t.x][t.y]==12 || board[t.x][t.y]==15)) {
+                    return 1;
+                }
+            }
+            enemy_array.clear();
+
+            new Knight().path( color, x,  y);
+            for (pair t : enemy_array) {
+                if (color==1 && (board[t.x][t.y]==3) || 
+                color==0 && (board[t.x][t.y]==13)) {
+                    return 1;
+                }
+            }
+            enemy_array.clear();
+
+            new Bishop().path( color, x,  y);
+            for (pair t : enemy_array) {
+                if (color==1 && (board[t.x][t.y]==4 || board[t.x][t.y]==5) || 
+                color==0 && (board[t.x][t.y]==14 || board[t.x][t.y]==15)) {
+                    return 1;
+                }
+            }
+            enemy_array.clear();
+
+            new Pawn().path( color, x,  y);
+            for (pair t : enemy_array) {
+                if (color==1 && (board[t.x][t.y]==1) || 
+                color==0 && (board[t.x][t.y]==11)) {
+                    return 1;
+                }
+            }
+            enemy_array.clear();
+
+            new King().path( color, x,  y);
+            for (pair t : enemy_array) {
+                if (color==1 && (board[t.x][t.y]==6) || 
+                color==0 && (board[t.x][t.y]==16)) {
+                    return 1;
+                }
+            }
+
+            return 0;
         }
     }
     
-    public class start_game{
-        // black    0
-        // white    1
-
-        // Pawn pawn=new Pawn();           // 1
-        // Rock rock=new Rock();           // 2
-        // Knight knight=new Knight();     // 3
-        // Bishop bishop =new Bishop();    // 4
-        // Queen queen=new Queen();        // 5
-        // King king=new King();           // 6
-
-        // public void piece_move(integer a,integer b,integer p,integer q){
-
-        //     
-        // }
-    }
 }
