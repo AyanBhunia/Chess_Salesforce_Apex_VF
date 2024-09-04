@@ -21,7 +21,7 @@
         <div id="{!unique}_blackQueen" class="piece" draggable="true" ondragstart="drag(event)">♛</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 6}">
-        <div id="blackking" class="piece" draggable="true" ondragstart="drag(event)">♚</div>
+        <div id="blackking" class="piece" draggable="true" ondragstart="drag(event)">♚</div> 
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 11}">
         <div id="{!unique}_whitePawn" class="piece" draggable="true" ondragstart="drag(event)">♙</div>

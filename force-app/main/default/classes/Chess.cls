@@ -379,7 +379,7 @@ public class Chess {
             update chessBoardRecords[fromX];
             insert new_move;
 
-            system.debug('inserted new move');
+            system.debug('inserted new move'); 
 
             string fen = board_to_fen(fromX,fromY,String.valueof(new_move.row__c),(Integer)new_move.color__c);
 

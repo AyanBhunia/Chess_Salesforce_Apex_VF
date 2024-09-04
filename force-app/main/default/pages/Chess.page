@@ -136,17 +136,12 @@
             }
 
             .move_grid{
-                background: 
-                    linear-gradient(to right, transparent 26px, #ff4c4c 26px, #ff4c4c 28px, transparent 27px), /* Leftmost red line */        linear-gradient(to right, transparent 30px, #ff4c4c 30px, #ff4c4c 31px, transparent 32px), /* Second red line */  
-                    repeating-linear-gradient(
-                        to bottom,
-                        #fff, /* Background color */
-                        #fff 23px, /* Background color */
-                        #c6d7eb 23px, /* Line color */
-                        #c6d7eb 25px /* Line color */
-                    );
-                border: 1px solid #ddd; /* Optional border to mimic a notepad edge */
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+                background: linear-gradient(to bottom, #ffffff8a 23px, #ff4c4c 23px, transparent 28px), linear-gradient(to right, transparent 26px, #ff4c4c 26px, #ff4c4c 28px, transparent 27px), linear-gradient(to right, transparent 30px, #ff4c4c 30px, #ff4c4c 31px, transparent 32px), repeating-linear-gradient(to bottom, #b9b5b4, #898785 23px, #015fce8f 23px, #cacacac4 25px);
+                border: 1px solid #302e2e;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                /* color: white; */
+                font-weight: bold;
+                font-size: small;
             }
 
             .move_grid{
@@ -587,7 +582,7 @@
 
     </head>
 
-    <body style="background-color: #D2B48C; padding: 10px 10px 10px 10px;">
+    <body style="background-color: #595042; padding: 10px 10px 10px 10px;">
         
 
         <div class="left_right">
