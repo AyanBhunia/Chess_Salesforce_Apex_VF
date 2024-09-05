@@ -381,7 +381,7 @@ public class Chess {
 
             system.debug('inserted new move'); 
 
-            string fen = board_to_fen(fromX,fromY,String.valueof(new_move.row__c),(Integer)new_move.color__c);
+            string fen = board_to_fen(String.valueof(new_move.row__c),(Integer)new_move.color__c);
 
             return check.x+''+check.y+' '+fen;
         }
@@ -444,9 +444,28 @@ public class Chess {
         }
     }
 
-    public static string board_to_fen(Integer fromX, Integer fromY,string move_count, integer color)
+    @RemoteAction
+    public static string share_fen()
     {
         initialize_board();
+        chess_moves =new list<chessBoardMove__c>();
+        chess_moves= [select row__c ,color__c from chessBoardMove__c ORDER BY row__c DESC limit 1];
+
+        String tottal_moves='0';
+        Integer color=0;
+
+        if (chess_moves.size()>0)
+        {
+            tottal_moves=String.valueof(chess_moves[0].row__c);
+            color=(Integer)chess_moves[0].color__c;
+        }
+
+
+        return board_to_fen(tottal_moves,color);
+    }
+
+    public static string board_to_fen(string move_count, integer color)
+    {
         string fen='';
         integer x,y,count;
         for(x=0;x<8;x++)

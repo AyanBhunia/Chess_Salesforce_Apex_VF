@@ -1,4 +1,4 @@
-<apex:page controller="Chess" setup="false">
+<apex:page controller="Chess" setup="false"  showHeader="false">
 
     <audio id="moveSound" src="{!URLFOR($Resource.moveSound)}" preload="auto"></audio>
 
@@ -14,7 +14,7 @@
                 justify-content: center;
             }
 
-            @media (max-width:900px) {
+            @media (max-width:1080px) {
             .left_right{
                 display: flex;
                 flex-direction: column;
@@ -135,13 +135,8 @@
             	background-color: darkcyan;
             }
 
-            .move_grid{
-                background: linear-gradient(to bottom, #ffffff8a 23px, #ff4c4c 23px, transparent 28px), linear-gradient(to right, transparent 26px, #ff4c4c 26px, #ff4c4c 28px, transparent 27px), linear-gradient(to right, transparent 30px, #ff4c4c 30px, #ff4c4c 31px, transparent 32px), repeating-linear-gradient(to bottom, #b9b5b4, #898785 23px, #015fce8f 23px, #cacacac4 25px);
-                border: 1px solid #302e2e;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                /* color: white; */
-                font-weight: bold;
-                font-size: small;
+            .hint_color{
+                background-color: #dacb4d;
             }
 
             .move_grid{
@@ -149,9 +144,11 @@
                 grid-template-columns: repeat(3, 1fr);
                 grid-template-rows: repeat(32, 1fr);
                 width: 300px;
-                padding-left: 50px;
+                padding-left: 8px;
                 overflow-x: auto;
-                height: 600px;
+                height: 100%;
+                margin-top: 27px;
+                margin-right: 10px;
             }
             .move_grid_text{
                 height: 25px;
@@ -175,29 +172,35 @@
                 /* text-indent: -9999px; */
                 width: 100px;
                 height: 50px;
-                background: #bada55;
+                background: #00966f;
                 display: flex;
                 /* border-radius: 100px; */
                 position: relative;
                 justify-content: space-around;
                 align-items: center;
+                margin: 4px 4px 4px 5px;
+                box-shadow: inset 0px 0px 10px 3px rgb(0 0 0 / 60%);
+                font-weight: bold;
             }
 
             label:after {
                 content: '';
                 position: absolute;
-                top: 4%;
+                top: 7%;
                 left: calc(100% - 5px);
-                width: 50%;
-                height: 90%;
-                background: #fff;
+                width: 42%;
+                height: 80%;
+                background: #4c473e;
                 /* border-radius: 90px; */
                 transform: translateX(-100%);
                 transition: 0.3s;
+                transition-timing-function: ease-in-out;
+                margin: 2px 2px 2px 0px;
+                box-shadow: 0px 0px 20px 0px rgb(0 0 0 / 60%);
             }
 
             input:checked + label {
-                background: #bada55;
+                background: #00966f;
             }
 
             input:checked + label:after {
@@ -206,7 +209,7 @@
             }
 
             input:not(:checked) + label {
-                background: grey;
+                background: #a97f62;
             }
 
             input:not(:checked) + label:after {
@@ -249,17 +252,113 @@
             }
 
             .controls{
-                 display: flex;
-                 grid-area: controls;
+                display: inline-flex;
+                grid-area: controls;
+                justify-content: space-evenly;
+                align-items: center;
+                box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
+                margin: 2px 5px 8px 10px;
+                background-color: #3d372d;
+                height: 90px;
             }
 
             .options{
-                 display: flex;
-                 grid-area: options;
+                display: flex;
+                grid-area: options;
+                box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
+                margin: 8px 5px 2px 5px;
+                height: 90px;
+                align-items: center;
+                justify-content: space-around;
+                background-color: #3d372d;
             }
 
             .chess_move{
                 grid-area: chess_move;
+                box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
+                margin: 10px 5px 10px 10px;
+                height: 510px;
+                display: flex;
+                background: linear-gradient(to bottom, #ffffff8a 23px, #ff4c4c 23px, transparent 28px), linear-gradient(to right, transparent 26px, #ff4c4c 26px, #ff4c4c 28px, transparent 27px), linear-gradient(to right, transparent 30px, #ff4c4c 30px, #ff4c4c 31px, transparent 32px), repeating-linear-gradient(to bottom, #b9b5b4, #898785 23px, #015fce8f 23px, #cacacac4 25px);
+                /* border: 1px solid #302e2e; */
+                /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+                /* color: white; */
+                font-weight: bold;
+                font-size: small;
+            }
+
+            .blacklist{
+                border-top: 3px solid black;
+                box-shadow: 0px 0px 11px 3px rgb(0 0 0 / 59%);
+                margin: 1px 1px 4px 1px;
+                background-color: #adaaa87a;
+            }
+
+            .whitelist{
+                border-bottom: 3px solid black;
+                box-shadow: 0px 0px 11px 3px rgb(0 0 0 / 59%);
+                margin: 4px 1px 1px 1px;
+                background-color: #adaaa87a;
+            }
+
+            .svg-bg-button.svg-bg-button{
+                width: 40px; /* Adjust width */
+                height: 40px; /* Adjust height */
+                /* background:#0000006e !important; */
+                background-color: #0000006e;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 30px 30px; /* Adjust size */
+                border: none;
+                cursor: pointer;
+                margin: 4px 4px 4px 5px;
+                box-shadow: 0px 0px 6px 2px rgb(0 0 0 / 60%);
+            }
+
+            .svg-bg-button:hover {
+                background-color: #ffffff24; /* Change background on hover */
+                background-position: center !important;
+            }
+
+            .start_new_game{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 4c2.1 0 4.1.8 5.6 2.3c3.1 3.1 3.1 8.2 0 11.3c-1.8 1.9-4.3 2.6-6.7 2.3l.5-2c1.7.2 3.5-.4 4.8-1.7c2.3-2.3 2.3-6.1 0-8.5C15.1 6.6 13.5 6 12 6v4.6l-5-5l5-5zM6.3 17.6C3.7 15 3.3 11 5.1 7.9l1.5 1.5c-1.1 2.2-.7 5 1.2 6.8q.75.75 1.8 1.2l-.6 2q-1.5-.6-2.7-1.8'/%3E%3C/svg%3E") !important;
+            }
+
+            .undo{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M7 19v-2h7.1q1.575 0 2.738-1T18 13.5T16.838 11T14.1 10H7.8l2.6 2.6L9 14L4 9l5-5l1.4 1.4L7.8 8h6.3q2.425 0 4.163 1.575T20 13.5t-1.737 3.925T14.1 19z'/%3E%3C/svg%3E") !important;
+            }
+
+            .share{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M17 22q-1.25 0-2.125-.875T14 19q0-.15.075-.7L7.05 14.2q-.4.375-.925.588T5 15q-1.25 0-2.125-.875T2 12t.875-2.125T5 9q.6 0 1.125.213t.925.587l7.025-4.1q-.05-.175-.062-.337T14 5q0-1.25.875-2.125T17 2t2.125.875T20 5t-.875 2.125T17 8q-.6 0-1.125-.213T14.95 7.2l-7.025 4.1q.05.175.063.338T8 12t-.012.363t-.063.337l7.025 4.1q.4-.375.925-.587T17 16q1.25 0 2.125.875T20 19t-.875 2.125T17 22'/%3E%3C/svg%3E");
+            }
+
+            .hint{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3E%3Cpath d='M17.252 12.49c-.284 2.365-1.833 3.31-2.502 3.996c-.67.688-.55.825-.505 1.834a.916.916 0 0 1-.916.971h-2.658a.92.92 0 0 1-.917-.971c0-.99.092-1.22-.504-1.834c-.76-.76-2.548-1.833-2.548-4.784a5.307 5.307 0 1 1 10.55.788'/%3E%3Cpath d='M10.46 19.236v1.512c0 .413.23.752.513.752h2.053c.285 0 .514-.34.514-.752v-1.512m-2.32-10.54a2.227 2.227 0 0 0-2.226 2.227m10.338.981h1.834m-3.68-6.012l1.301-1.301M18.486 17l1.301 1.3M12 2.377V3.86m-6.76.73l1.292 1.302M4.24 18.3L5.532 17m-.864-5.096H2.835'/%3E%3C/g%3E%3C/svg%3E");
+            }
+
+            .new_window{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413T19 21zm4.7-5.3l-1.4-1.4L17.6 5H14V3h7v7h-2V6.4z'/%3E%3C/svg%3E");
+            }
+
+            .overlay-message {
+                visibility: hidden; /* Initially hidden */
+                position: fixed; /* Fixed position */
+                bottom: 20px; /* 20px from the bottom */
+                left: 20px; /* 20px from the left */
+                background-color: #4CAF50; /* Green background */
+                color: white; /* White text */
+                padding: 15px 25px; /* Padding */
+                border-radius: 8px; /* Rounded corners */
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Shadow for popup effect */
+                z-index: 1000; /* High z-index to appear on top */
+                font-size: 16px; /* Font size */
+                transition: visibility 0s, opacity 0.5s linear; /* Fade-in and fade-out effect */
+                opacity: 0; /* Initial opacity */
+            }
+            
+            .overlay-message.show {
+                visibility: visible; /* Make it visible */
+                opacity: 1; /* Set opacity to 1 */
             }
 
 
@@ -367,6 +466,7 @@
                 remove_class('avail');
                 remove_class('target');
                 remove_class('enemy');
+                remove_class('hint_color');
 
                 console.log('drop now updateBoard ' + fromX + ',' + fromY + ',' + ',' + toX + ',' + toY);
 
@@ -578,32 +678,85 @@
                 )
             }
 
+            function new_window() {
+                window.open("https://ddm000009bfqhuac-dev-ed--c.develop.vf.force.com/apex/Chess", '_blank').focus();
+            }
+
+            function share()
+            {
+                Chess.share_fen(
+                    function (result, ev) {
+                        console.log(result);
+                        navigator.clipboard.writeText(result);
+                        const messageElement = document.getElementById('copyMessage');
+
+                        messageElement.classList.add('show');
+
+                        // Hide message after 2 seconds
+                        setTimeout(() => {
+                            messageElement.classList.remove('show');
+                        }, 4000);
+                    })
+            }
+
+            ws_hint = new WebSocket('wss://chess-api.com/v1');
+            ws_hint.onmessage = (event) => {
+                const chessApiMessage = JSON.parse(event.data);
+                console.log(chessApiMessage);
+                // if ("winChance" in chessApiMessage) {
+                //     document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
+                //     document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
+                // }
+                fromX = (8 - chessApiMessage.fromNumeric % 10);
+                fromY = (Math.floor(chessApiMessage.fromNumeric / 10) - 1);
+                toX = (8 - chessApiMessage.toNumeric % 10);
+                toY = (Math.floor(chessApiMessage.toNumeric / 10) - 1);
+
+                remove_class('hint_color');
+
+                document.querySelector("div.chessBoard div[data-x='" + fromX + "'][data-y='" + fromY + "']").classList.add('hint_color');
+                document.querySelector("div.chessBoard div[data-x='" + toX + "'][data-y='" + toY + "']").classList.add('hint_color');
+            };
+
+            function hint(){
+                Chess.share_fen(
+                    function (result, ev) {
+                        console.log(result);
+                        ws_hint.send(JSON.stringify({
+                            fen: result
+                        }));
+                    })
+            }
+
         </script>
 
     </head>
 
     <body style="background-color: #595042; padding: 10px 10px 10px 10px;">
         
+        <div id="copyMessage" class="overlay-message">Fen copied</div>
 
         <div class="left_right">
 
-            <div id="bar" style="background-color: #fff; margin: 60px 10px 60px 0;">
+            <div id="bar" style="background-color: #fff; margin: 65px 10px 65px 5px; box-shadow: -4px 0px 8px 4px rgb(0 0 0 / 60%);">
                 <div class="eval_bar">0.3</div>
             </div>
 
             <div style="display: inline-grid;justify-content: center;">
                 
-                <apex:outputPanel id="blacklist" style="display: inline-flex;border-top: 3px solid black;">
-                    <div class="picture">♚</div>
-                    <div>
-                    <div style=" font-size: 24px;font-weight: bold;">Black</div>
-                    <div style="display: inline-flex;font-size: 22px;">
-                        <apex:repeat value="{!blacklist}" var="xxx">
-                            <div>{!xxx}</div>
-                        </apex:repeat>
-                    </div>
-                    </div>
-                </apex:outputPanel>
+                <div class="blacklist">
+                    <apex:outputPanel id="blacklist" style="display: inline-flex; align-items: flex-end;">
+                        <div class="picture">♚</div>
+                        <div>
+                        <div style=" font-size: 24px;font-weight: bold;">Black</div>
+                        <div style="display: inline-flex;font-size: 22px;">
+                            <apex:repeat value="{!blacklist}" var="xxx">
+                                <div>{!xxx}</div>
+                            </apex:repeat>
+                        </div>
+                        </div>
+                    </apex:outputPanel>
+                </div>
 
                 <apex:outputPanel id="chessBoardPanel" style="border: 11px solid #040202db;">
 
@@ -658,18 +811,20 @@
 
                 </apex:outputPanel>
 
-                <apex:outputPanel id="whitelist" style="display: inline-flex;border-bottom: 3px solid black;align-items: flex-end;">
-                    <div class="picture">♔</div>
-                    <div>
-                        <div style="display: inline-flex;font-size: 22px;">
-                            <apex:repeat value="{!whitelist}" var="xxx">
-                                <div>{!xxx}</div>
-                            </apex:repeat>
+                <div class="whitelist">
+                    <apex:outputPanel id="whitelist" style="display: inline-flex; align-items: flex-end;">
+                        <div class="picture">♔</div>
+                        <div>
+                            <div style=" font-size: 24px;font-weight: bold;">
+                                White</div>
+                            <div style="display: inline-flex;font-size: 22px;">
+                                <apex:repeat value="{!whitelist}" var="xxx">
+                                    <div>{!xxx}</div>
+                                </apex:repeat>
+                            </div>
                         </div>
-                        <div style=" font-size: 24px;font-weight: bold;">
-                            White</div>
-                    </div>
-                </apex:outputPanel>
+                    </apex:outputPanel>
+                </div>
             </div>
 
             <div class="right_panel">
@@ -698,12 +853,19 @@
                         <apex:actionFunction name="rerendermovesPanel" action="{!initialize_board_moves}" rerender="blacklist, whitelist,chessMoves"
                         />
                         <!-- <apex:commandButton value="Update Board" action="{!initialize_board}" reRender="chessBoard" /> -->
-                        <apex:commandButton value="Start New Game" action="{!setnewboard}" reRender="chessBoard,blacklist, whitelist,chessMoves"
+                        <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" reRender="chessBoard,blacklist, whitelist,chessMoves"
                         />
-                        <apex:commandButton value="Undo" oncomplete="back()" />
-                        <apex:commandButton value="Share" />
-                        <apex:commandButton value="Hint" />
+                        <apex:commandButton styleClass="svg-bg-button undo" title="Undo" oncomplete="back()" />
                     </apex:form>
+
+                        <input class="svg-bg-button hint" title="Hint" onclick="hint()">
+                        </input>
+
+                        <div>
+                            <input class="svg-bg-button share" title="Share" onclick="share()"></input>
+                            <input class="svg-bg-button new_window" title="New Window" onclick="new_window()"></input>
+                        </div>
+                        
                 </div>
 
                 <div class="chess_move">
