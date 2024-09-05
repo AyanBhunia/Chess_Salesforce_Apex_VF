@@ -377,7 +377,7 @@ public class Chess {
             
             update chessBoardRecords[tox];
             update chessBoardRecords[fromX];
-            insert new_move;
+            insert new_move; 
 
             system.debug('inserted new move'); 
 
