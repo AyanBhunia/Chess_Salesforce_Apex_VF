@@ -570,7 +570,7 @@
                                 console.log('3');
                             }
                             else {
-                                remove_class('whitecheck');
+                                remove_class('whitecheck'); 
                                 console.log('4');
                             }
                         }
