@@ -1,4 +1,4 @@
-<apex:page controller="Chess" setup="false"  showHeader="false">
+<apex:page controller="Chess" setup="false"  showQuickActionVfHeader="false" showHeader="false" sidebar="false">
 
     <audio id="moveSound" src="{!URLFOR($Resource.moveSound)}" preload="auto"></audio>
 
@@ -15,12 +15,25 @@
             }
 
             @media (max-width:1080px) {
-            .left_right{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
+                .left_right{
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                /* document.getElementsByClassName('move_grid')[0].style.width='550px';
+                    document.getElementsByClassName('right_panel')[0].style.gridTemplateAreas ='"controls"  "options""chess_move"'; */
+                .move_grid{
+                    width: 580px !important;
+                }
+                .right_panel{
+                    width: -webkit-fill-available;
+                    grid-template-areas:
+                    "controls"
+                    "options"
+                    "chess_move"  !important;
+                }
             }
-            }
+            
             .chessBoard {
                 /* width: calc(var(--n)*9);
                 height: calc(var(--n)*9); */
@@ -112,31 +125,61 @@
             }
 
             .white {
-                background-color: white;
+                background-color: #c5c5c5;
             }
 
             .black {
-                background-color: gray;
+                background-color: #242424;
             }
 
-            .avail{
-                background-color: aqua;
+            .white_piece{
+                color: white;
+                text-shadow: 0px 0px 10px #000000, 0px 0px 10px #ffffff;
             }
 
-            .target{
-                background-color: greenyellow;
+            .black_piece{
+                color: black;
+                text-shadow: 0px 0px 5px #ffffff, 0px 0px 10px #000000;
             }
 
-            .enemy{
-                background-color: crimson;
+            .target, .avail, .enemy, .hint_color{
+                box-shadow: inset 0px 0px 20px 3px rgb(0 0 0 / 60%);
+            }
+
+            .white.target{
+                background-color: rgb(255 217 66);
+            }
+
+            .black.target{
+                background-color: rgb(107 85 0);
+            }
+
+            .white.avail{
+                background-color: color(srgb 0.41 1 0.41);
+            }
+
+            .black.avail{
+                background-color: color(srgb 0 0.6 0.01);
+            }
+
+            .white.enemy{
+                background-color: rgb(255 29 78);
+            }
+
+            .black.enemy{
+                background-color: rgb(128 0 28);
+            }
+
+            .white.hint_color{
+                background-color: #71fff3;
+            }
+
+            .black.hint_color{
+                background-color: #008176;
             }
             
             .avail_2nd{
-            	background-color: darkcyan;
-            }
-
-            .hint_color{
-                background-color: #dacb4d;
+                background-color: darkcyan;
             }
 
             .move_grid{
@@ -146,7 +189,7 @@
                 width: 300px;
                 padding-left: 8px;
                 overflow-x: auto;
-                height: 100%;
+                height: 92%;
                 margin-top: 27px;
                 margin-right: 10px;
             }
@@ -266,7 +309,7 @@
                 display: flex;
                 grid-area: options;
                 box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
-                margin: 8px 5px 2px 5px;
+                margin: 8px 5px 2px 10px;
                 height: 90px;
                 align-items: center;
                 justify-content: space-around;
@@ -299,6 +342,7 @@
                 box-shadow: 0px 0px 11px 3px rgb(0 0 0 / 59%);
                 margin: 4px 1px 1px 1px;
                 background-color: #adaaa87a;
+                color: whitesmoke;
             }
 
             .svg-bg-button.svg-bg-button{
@@ -361,9 +405,15 @@
                 opacity: 1; /* Set opacity to 1 */
             }
 
+            .disabled-button {
+                pointer-events: none; /* Disable click events */
+                opacity: 0.5; /* Make it look visually disabled */
+            }
+
 
         </style>
         <script>
+            
             function playMoveSound() {
                 const moveSound = document.getElementById('moveSound');
                 moveSound.volume = 0.7;
@@ -388,6 +438,16 @@
                     toSquare=event.target;
                 }
 
+                if (toSquare.classList.contains('target')) {
+                    remove_class('avail');
+                    remove_class('target');
+                    remove_class('enemy');
+                    remove_class('avail_2nd');
+
+                    chech_previous_moves();
+                    return;
+                }
+
                 console.log(toSquare.id);
                 console.log(toSquare.querySelector('.piece'));
 
@@ -407,36 +467,12 @@
                         remove_class('target');
                         remove_class('enemy');
                         remove_class('avail_2nd');
+
+                        chech_previous_moves();
                     }
                 }
                 
             }
-
-            ws = new WebSocket('wss://chess-api.com/v1');
-
-            // 2. Register callback to Log every incomming message in the console:
-            ws.onmessage = (event) => {
-                const chessApiMessage = JSON.parse(event.data);
-                // console.log(chessApiMessage);
-                if("winChance" in chessApiMessage)
-                {
-                    document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
-                    document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
-                }
-            };
-
-            // 1. Create a handy function for sending requests:
-            async function postChessApi(data = {}) {
-                const response = await fetch("https://chess-api.com/v1", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data),
-                });
-                return response.json();
-            }
-            
 
             function call_move(data,target)
             {
@@ -470,12 +506,18 @@
 
                 console.log('drop now updateBoard ' + fromX + ',' + fromY + ',' + ',' + toX + ',' + toY);
 
+                console.log("Chess.updateBoard("+parseInt(fromX)+','+
+                    parseInt(fromY)+','+
+                    parseInt(toX)+','+
+                    parseInt(toY)+','+
+                    parseInt(colorValue.value)+");");
                 // Update the board using JavaScript Remoting
                 Chess.updateBoard(
                     parseInt(fromX),
                     parseInt(fromY),
                     parseInt(toX),
                     parseInt(toY),
+                    parseInt(colorValue.value),
                     function (result, ev) {
                         if (ev.status) {
                             console.log(ev.status);
@@ -486,6 +528,7 @@
                             }
                             else
                             {
+                                label_for_switch2.click();
                                 rerendermovesPanel();
                                 playMoveSound();
                                 if (result[0]==1) {
@@ -533,6 +576,7 @@
                                                     fromY,
                                                     toX,
                                                     toY,
+                                                    parseInt(colorValue.value),
                                                     function (result, ev) {
                                                         if (ev.status) {
                                                             console.log(ev.status);
@@ -543,6 +587,8 @@
                                                             rerenderchessBoardPanel();
 
                                                             setTimeout(function () {
+                                                                
+                                                                label_for_switch2.click();
                                                                 playMoveSound();
                                                                 console.log('done enemy move');
 
@@ -578,7 +624,8 @@
 
                 var X = pos.getAttribute('data-x');
                 var Y = pos.getAttribute('data-y');
-
+                    console.log(parseInt(X),
+                    parseInt(Y));
                 Chess.updateAvailable(
                     parseInt(X),
                     parseInt(Y),
@@ -593,7 +640,7 @@
                             remove_class('avail_2nd');
 
                             pos.classList.add('target');
-							if(result.list_z.length>0)
+                            if(result.list_z.length>0)
                             {
                                 result.list_z.forEach(element => {
                                     document.getElementById(element.x + '_' + element.y + '_square').classList.add('avail_2nd');
@@ -622,6 +669,41 @@
             function drag(event) {
                 // put_color(event.target.closest('.square').id);
                 event.dataTransfer.setData("text", event.target.id);
+
+                const target = event.target;
+
+                // Create a custom drag image element
+                const dragImage = document.createElement('div'); // Create a new div element
+                dragImage.innerHTML = target.innerHTML; // Copy the inner content (like the chess piece character)
+
+                // Get all computed styles from the original target
+                const computedStyle = window.getComputedStyle(target);
+
+                // Copy most of the styles from the original target to the drag image
+                Array.from(computedStyle).forEach((key) => {
+                    dragImage.style[key] = computedStyle[key];
+                });
+
+                // // Override specific styles for the drag image
+                // dragImage.style.width = '60px'; // Set width to 60px
+                // dragImage.style.height = '60px'; // Set height to 60px
+                // dragImage.style.display = 'flex'; // Use flexbox to center content
+                // dragImage.style.alignItems = 'center'; // Center content vertically
+                // dragImage.style.justifyContent = 'center'; // Center content horizontally
+                dragImage.style.backgroundColor = 'transparent'; // Transparent background
+                // dragImage.style.border = 'none'; // Remove any borders
+                // dragImage.style.opacity = '0.5'; // Make it semi-transparent (optional)
+                dragImage.style.position = 'absolute'; // Position it properly
+                dragImage.style.top = '-1000px'; // Move it off-screen (important for some browsers)
+
+                // Append it to the body temporarily
+                document.body.appendChild(dragImage);
+
+                // Use the created element as the drag image
+                event.dataTransfer.setDragImage(dragImage, 30, 30); // Center the image at the pointer
+
+                // Clean up: Remove the custom element after a short delay
+                setTimeout(() => document.body.removeChild(dragImage), 0);
             }
 
             function drop(event) {
@@ -644,8 +726,49 @@
                     '{!$RemoteAction.Chess.back_back}', 
                     function (result, event) {
                         if (event.status) {
+                            playMoveSound();
+                            label_for_switch2.click();
                             rerenderchessBoardPanel(); 
                             rerendermovesPanel(); 
+
+                            Chess.share_fen(
+                                function (result, ev) {
+                                    console.log(result);
+                                    ws.send(JSON.stringify({
+                                        fen: result
+                                    }));
+                                    
+                                    chech_previous_moves();
+                                })
+
+                            if(switchValue.value == 1)
+                            {
+                                Visualforce.remoting.Manager.invokeAction(
+                                    '{!$RemoteAction.Chess.back_back}',
+                                    function (result, event) {
+                                        if (event.status) {
+                                            playMoveSound();
+                                            label_for_switch2.click();
+                                            rerenderchessBoardPanel();
+                                            rerendermovesPanel();
+
+                                            Chess.share_fen(
+                                                function (result, ev) {
+                                                    console.log(result);
+                                                    ws.send(JSON.stringify({
+                                                        fen: result
+                                                    }));
+
+                                                    chech_previous_moves();
+                                                })
+
+                                        } else {
+                                            console.log('Error: ' + event.message);
+                                        }
+                                    }
+                                );
+                            }
+
                         } else {
                             console.log('Error: ' + event.message);
                         }
@@ -654,6 +777,7 @@
             }
 
             function check_for_check(){
+                chech_previous_moves();
                 Chess.check_for_check(
                     function (result, ev) {
                         if (ev.status) {
@@ -673,6 +797,45 @@
                                 remove_class('whitecheck'); 
                                 console.log('4');
                             } 
+                        }
+                    }
+                )
+            }
+
+            function chech_previous_moves()
+            {
+                Chess.chech_if_board_okay(
+                    function (result, ev) {
+                        if (ev.status) {
+                            if(result)
+                            {
+                                rerenderchessBoardPanel();
+                            }
+                            Chess.previous_moves_data(
+                                function (result, ev) {
+                                    if (ev.status) {
+                                        // console.log(result);
+                                        if (result.length) {
+                                            document.querySelector("div.chessBoard div[data-x='" + result[0].from_x__c + "'][data-y='" + result[0].from_y__c + "']").classList.add('target');
+                                            document.querySelector("div.chessBoard div[data-x='" + result[0].to_x__c + "'][data-y='" + result[0].to_y__c + "']").classList.add('target');
+
+                                            if (result[0].check__c == 10) {
+                                                document.getElementById('blackking').closest('.square').classList.add('blackcheck');
+                                            }
+                                            if (result[0].check__c == 1) {
+                                                document.getElementById('whiteKing').closest('.square').classList.add('whitecheck');
+                                            }
+
+                                            if (result[0].color__c== colorValue.value) {
+                                                label_for_switch2.click();
+                                            }
+
+
+                                        } else {
+
+                                        }
+                                    }
+                                });
                         }
                     }
                 )
@@ -699,33 +862,23 @@
                     })
             }
 
-            ws_hint = new WebSocket('wss://chess-api.com/v1');
-            ws_hint.onmessage = (event) => {
-                const chessApiMessage = JSON.parse(event.data);
-                console.log(chessApiMessage);
-                // if ("winChance" in chessApiMessage) {
-                //     document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
-                //     document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
-                // }
-                fromX = (8 - chessApiMessage.fromNumeric % 10);
-                fromY = (Math.floor(chessApiMessage.fromNumeric / 10) - 1);
-                toX = (8 - chessApiMessage.toNumeric % 10);
-                toY = (Math.floor(chessApiMessage.toNumeric / 10) - 1);
-
-                remove_class('hint_color');
-
-                document.querySelector("div.chessBoard div[data-x='" + fromX + "'][data-y='" + fromY + "']").classList.add('hint_color');
-                document.querySelector("div.chessBoard div[data-x='" + toX + "'][data-y='" + toY + "']").classList.add('hint_color');
-            };
-
             function hint(){
                 Chess.share_fen(
                     function (result, ev) {
-                        console.log(result);
+                        // console.log(result);
                         ws_hint.send(JSON.stringify({
                             fen: result
                         }));
                     })
+            }
+
+            function Set_New_Board() {
+                if (colorValue.value == 0) {
+                    label_for_switch2.click();
+                }
+                
+                document.querySelector('.eval_bar').innerText = '0.2';
+                document.querySelector('.eval_bar').style.height = '48%';
             }
 
         </script>
@@ -738,92 +891,94 @@
 
         <div class="left_right">
 
-            <div id="bar" style="background-color: #fff; margin: 65px 10px 65px 5px; box-shadow: -4px 0px 8px 4px rgb(0 0 0 / 60%);">
-                <div class="eval_bar">0.3</div>
-            </div>
-
-            <div style="display: inline-grid;justify-content: center;">
-                
-                <div class="blacklist">
-                    <apex:outputPanel id="blacklist" style="display: inline-flex; align-items: flex-end;">
-                        <div class="picture">♚</div>
-                        <div>
-                        <div style=" font-size: 24px;font-weight: bold;">Black</div>
-                        <div style="display: inline-flex;font-size: 22px;">
-                            <apex:repeat value="{!blacklist}" var="xxx">
-                                <div>{!xxx}</div>
-                            </apex:repeat>
-                        </div>
-                        </div>
-                    </apex:outputPanel>
+            <div style=" display: flex; "> 
+                <div id="bar" style="background-color: #fff; margin: 65px 10px 65px 5px; box-shadow: -4px 0px 8px 4px rgb(0 0 0 / 60%);">
+                    <div class="eval_bar">0.2</div>
                 </div>
 
-                <apex:outputPanel id="chessBoardPanel" style="border: 11px solid #040202db;">
-
-                    <div class="makeboard">
-                        <div id="up" class="up">
-                            <apex:repeat value="{!list_to_iterate}" var="x">
-                                <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G',
-                                    IF(x == 7, 'H', ''))))))))}</div>
-                            </apex:repeat>
-                        </div>
-
-                        <div id="left" class="left">
-                            <apex:repeat value="{!list_to_iterate}" var="x">
-                                <div class="box">{!8-x}</div>
-                            </apex:repeat>
-                        </div>
-
-                        <apex:outputPanel id="chessBoard">
-                            <div  class="chessBoard">
-                                <apex:variable value="{!0}" var="counter_x" />
-                                <apex:repeat value="{!board}" var="row"> 
-                                    <apex:variable value="{!0}" var="counter_y" />
-                                    <apex:repeat value="{!row}" var="cell">
-                                        <!-- <div>{!counter_x}</div> -->
-                                        <div id="{!counter_x}_{!counter_y}_square" class="square {!IF(MOD(counter_x, 2)+MOD(counter_y,2) != 1, 'white', 'black')}" onclick="box_onclick(event)" ondrop="drop(event)" ondragover="allowDrop(event)" data-x="{!counter_x}" data-y="{!counter_y}">
-                                                <!-- <p style="font-size:35%;"> -->
-                                                    <!-- {!counter_x}, {!counter_y} -->
-                                                    <!-- {!board[counter_x][counter_y]} -->
-                                                <!-- </p> -->
-                                                <c:chessPiece pieceValue="{!cell}" unique="{!counter_x}{!counter_y}" />
-                                        </div>
-                                        <apex:variable value="{!counter_y + 1}" var="counter_y" />
-                                    </apex:repeat>
-                                    <apex:variable value="{!counter_x + 1}" var="counter_x" />
-                                </apex:repeat>
-                            </div>
-                        </apex:outputPanel>
-
-                        <div id="right" class="right">
-                            <apex:repeat value="{!list_to_iterate}" var="x">
-                                <div class="box">{!8-x}</div>
-                            </apex:repeat>
-                        </div>
-
-                        <div id="down" class="down">
-                            <apex:repeat value="{!list_to_iterate}" var="x">
-                                <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G',
-                                    IF(x ==7, 'H', ''))))))))}</div>
-                            </apex:repeat>
-                        </div>
-                    </div>
-
-                </apex:outputPanel>
-
-                <div class="whitelist">
-                    <apex:outputPanel id="whitelist" style="display: inline-flex; align-items: flex-end;">
-                        <div class="picture">♔</div>
-                        <div>
-                            <div style=" font-size: 24px;font-weight: bold;">
-                                White</div>
+                <div style="display: inline-grid;justify-content: center;">
+                    
+                    <div class="blacklist">
+                        <apex:outputPanel id="blacklist" style="display: inline-flex; align-items: flex-end;">
+                            <div class="picture">♚</div>
+                            <div>
+                            <div style=" font-size: 24px;font-weight: bold;">Black</div>
                             <div style="display: inline-flex;font-size: 22px;">
-                                <apex:repeat value="{!whitelist}" var="xxx">
+                                <apex:repeat value="{!blacklist}" var="xxx">
                                     <div>{!xxx}</div>
                                 </apex:repeat>
                             </div>
+                            </div>
+                        </apex:outputPanel>
+                    </div>
+
+                    <apex:outputPanel id="chessBoardPanel" style="border: 11px solid #040202db;">
+
+                        <div class="makeboard">
+                            <div id="up" class="up">
+                                <apex:repeat value="{!list_to_iterate}" var="x">
+                                    <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G',
+                                        IF(x == 7, 'H', ''))))))))}</div>
+                                </apex:repeat>
+                            </div>
+
+                            <div id="left" class="left">
+                                <apex:repeat value="{!list_to_iterate}" var="x">
+                                    <div class="box">{!8-x}</div>
+                                </apex:repeat>
+                            </div>
+
+                            <apex:outputPanel id="chessBoard">
+                                <div  class="chessBoard">
+                                    <apex:variable value="{!0}" var="counter_x" />
+                                    <apex:repeat value="{!board}" var="row"> 
+                                        <apex:variable value="{!0}" var="counter_y" />
+                                        <apex:repeat value="{!row}" var="cell">
+                                            <!-- <div>{!counter_x}</div> -->
+                                            <div id="{!counter_x}_{!counter_y}_square" class="square {!IF(MOD(counter_x, 2)+MOD(counter_y,2) != 1, 'white', 'black')}" onclick="box_onclick(event)" ondrop="drop(event)" ondragover="allowDrop(event)" data-x="{!counter_x}" data-y="{!counter_y}">
+                                                    <!-- <p style="font-size:35%;"> -->
+                                                        <!-- {!counter_x}, {!counter_y} -->
+                                                        <!-- {!board[counter_x][counter_y]} -->
+                                                    <!-- </p> -->
+                                                    <c:chessPiece pieceValue="{!cell}" unique="{!counter_x}{!counter_y}" />
+                                            </div>
+                                            <apex:variable value="{!counter_y + 1}" var="counter_y" />
+                                        </apex:repeat>
+                                        <apex:variable value="{!counter_x + 1}" var="counter_x" />
+                                    </apex:repeat>
+                                </div>
+                            </apex:outputPanel>
+
+                            <div id="right" class="right">
+                                <apex:repeat value="{!list_to_iterate}" var="x">
+                                    <div class="box">{!8-x}</div>
+                                </apex:repeat>
+                            </div>
+
+                            <div id="down" class="down">
+                                <apex:repeat value="{!list_to_iterate}" var="x">
+                                    <div class="box">{!IF(x == 0, 'A', IF(x == 1, 'B', IF(x == 2, 'C', IF(x == 3, 'D', IF(x == 4, 'E', IF(x == 5, 'F', IF(x == 6, 'G',
+                                        IF(x ==7, 'H', ''))))))))}</div>
+                                </apex:repeat>
+                            </div>
                         </div>
+
                     </apex:outputPanel>
+
+                    <div class="whitelist">
+                        <apex:outputPanel id="whitelist" style="display: inline-flex; align-items: flex-end;">
+                            <div class="picture">♔</div>
+                            <div>
+                                <div style=" font-size: 24px;font-weight: bold;">
+                                    White</div>
+                                <div style="display: inline-flex;font-size: 22px;">
+                                    <apex:repeat value="{!whitelist}" var="xxx">
+                                        <div>{!xxx}</div>
+                                    </apex:repeat>
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                    </div>
                 </div>
             </div>
 
@@ -839,7 +994,7 @@
 
                         <input type="checkbox" id="switch2" checked="checked" />
                         <label for="switch2">
-                            <div>WHITE</div>
+                            <div style=" color: white; ">WHITE</div>
                             <div>BLACK</div>
                         </label>
                         <input type="hidden" id="colorValue" value="1" />
@@ -847,13 +1002,13 @@
                 </div>
 
                 <div class="options">
-                    <apex:form>
+                    <apex:form >
                         <apex:actionFunction name="rerenderchessBoardPanel" action="{!initialize_board}" rerender="chessBoard" oncomplete="check_for_check()"
                         />
                         <apex:actionFunction name="rerendermovesPanel" action="{!initialize_board_moves}" rerender="blacklist, whitelist,chessMoves"
                         />
                         <!-- <apex:commandButton value="Update Board" action="{!initialize_board}" reRender="chessBoard" /> -->
-                        <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" reRender="chessBoard,blacklist, whitelist,chessMoves"
+                        <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" oncomplete="Set_New_Board()" reRender="chessBoard,blacklist, whitelist,chessMoves"
                         />
                         <apex:commandButton styleClass="svg-bg-button undo" title="Undo" oncomplete="back()" />
                     </apex:form>
@@ -891,20 +1046,120 @@
         
 
         <script>
+            ws = new WebSocket('wss://chess-api.com/v1');
+
+            // 2. Register callback to Log every incomming message in the console:
+            ws.onmessage = (event) => {
+                const chessApiMessage = JSON.parse(event.data);
+                // console.log(chessApiMessage);
+                if ("winChance" in chessApiMessage) {
+                    document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
+                    document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
+                }
+            };
+
+            ws.onopen = function (event) {
+                Chess.share_fen(
+                    function (result, ev) {
+                        console.log(result);
+                        ws.send(JSON.stringify({
+                            fen: result
+                        }));
+                    })
+            };
+
+            // 1. Create a handy function for sending requests:
+            async function postChessApi(data = {}) {
+                    // Convert data to JSON string
+                    const dataString = JSON.stringify(data);
+
+                    return new Promise((resolve, reject) => {
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.Chess.postChessData}',
+                            dataString,
+                            function (result, event) {
+                                if (event.status) {
+                                    // console.log(typeof(JSON.parse(result)), JSON.parse(result));
+                                    resolve(JSON.parse(result)); // Success: process the result
+                                } else {
+                                    reject(event.message); // Error: handle the error
+                                }
+                            },
+                            { escape: false }
+                        );
+                    });
+                }
+
+            ws_hint = new WebSocket('wss://chess-api.com/v1');
+            ws_hint.onmessage = (event) => {
+                const chessApiMessage = JSON.parse(event.data);
+                // console.log(chessApiMessage);
+                // if ("winChance" in chessApiMessage) {
+                //     document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
+                //     document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
+                // }
+
+                if ("fromNumeric" in chessApiMessage) {
+                    fromX = (8 - chessApiMessage.fromNumeric % 10);
+                    fromY = (Math.floor(chessApiMessage.fromNumeric / 10) - 1);
+                    toX = (8 - chessApiMessage.toNumeric % 10);
+                    toY = (Math.floor(chessApiMessage.toNumeric / 10) - 1);
+
+                    remove_class('hint_color');
+
+                    document.querySelector("div.chessBoard div[data-x='" + fromX + "'][data-y='" + fromY + "']").classList.add('hint_color');
+                    document.querySelector("div.chessBoard div[data-x='" + toX + "'][data-y='" + toY + "']").classList.add('hint_color');
+                }
+
+                
+            };
+
             const checkbox = document.getElementById('switch');
             const switchValue = document.getElementById('switchValue');
+            
+            const checkbox2 = document.getElementById('switch2');
+            const colorValue = document.getElementById('colorValue');
+
+            const label_for_switch2 = document.querySelector("label[for=switch2]");
 
             function updateValue() {
                 switchValue.value = checkbox.checked ? '1' : '0';
-                console.log('Switch value:', switchValue.value);
+                if (checkbox.checked) {
+                    label_for_switch2.classList.add('disabled-button');  // Disable the button
+                } else {
+                    label_for_switch2.classList.remove('disabled-button');  // Enable the button
+                }
+                // console.log('Switch value:', switchValue.value);
             }
-
             checkbox.addEventListener('change', updateValue);
             updateValue();
 
+            function updateValue2() {
+                colorValue.value = checkbox2.checked ? '1' : '0';
+                // console.log('Switch value:', switchValue.value);
+            }
+            checkbox2.addEventListener('change', updateValue2);
+            updateValue2();
+
+            // document.addEventListener('DOMContentLoaded', function () {
+            //         check_for_check();
+            //     }, false);
+
             document.addEventListener('DOMContentLoaded', function () {
-                    check_for_check();
+                    chech_previous_moves();
                 }, false);
+
+            // document.addEventListener('dragstart', function (event) {
+            //         if (event.target.classList.contains('piece')) {
+            //             event.target.style.cursor = 'grabbing'; // Change cursor on drag start
+            //         }
+            //     });
+
+            //     document.addEventListener('dragend', function (event) {
+            //         if (event.target.classList.contains('piece')) {
+            //             event.target.style.cursor = 'default'; // Reset cursor on drag end
+            //         }
+            //     });
         </script>
     </body>
 

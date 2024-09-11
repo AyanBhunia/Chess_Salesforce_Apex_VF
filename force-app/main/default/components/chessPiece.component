@@ -6,39 +6,39 @@
         <!-- No piece -->
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 1}">
-        <div id="{!unique}_blackPawn" class="piece" draggable="true" ondragstart="drag(event)">♟︎</div>
+        <div id="{!unique}_blackPawn" class="piece black_piece" draggable="true" ondragstart="drag(event)">♟︎</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 2}">
-        <div id="{!unique}_blackrock" class="piece" draggable="true" ondragstart="drag(event)">♜</div>
+        <div id="{!unique}_blackrock" class="piece black_piece" draggable="true" ondragstart="drag(event)">♜</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 3}">
-        <div id="{!unique}_blackKnight" class="piece" draggable="true" ondragstart="drag(event)" >♞</div>
+        <div id="{!unique}_blackKnight" class="piece black_piece" draggable="true" ondragstart="drag(event)" >♞</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 4}">
-        <div id="{!unique}_blackBishop" class="piece" draggable="true" ondragstart="drag(event)">♝</div>
+        <div id="{!unique}_blackBishop" class="piece black_piece" draggable="true" ondragstart="drag(event)">♝</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 5}">
-        <div id="{!unique}_blackQueen" class="piece" draggable="true" ondragstart="drag(event)">♛</div>
+        <div id="{!unique}_blackQueen" class="piece black_piece" draggable="true" ondragstart="drag(event)">♛</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 6}">
-        <div id="blackking" class="piece" draggable="true" ondragstart="drag(event)">♚</div>
+        <div id="blackking" class="piece black_piece" draggable="true" ondragstart="drag(event)">♚</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 11}">
-        <div id="{!unique}_whitePawn" class="piece" draggable="true" ondragstart="drag(event)">♙</div>
+        <div id="{!unique}_whitePawn" class="piece white_piece" draggable="true" ondragstart="drag(event)">♙</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 12}">
-        <div id="{!unique}_whiteRook" class="piece" draggable="true" ondragstart="drag(event)">♖</div>
+        <div id="{!unique}_whiteRook" class="piece white_piece" draggable="true" ondragstart="drag(event)">♖</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 13}">
-        <div id="{!unique}_whiteKnight" class="piece" draggable="true" ondragstart="drag(event)">♘</div>
+        <div id="{!unique}_whiteKnight" class="piece white_piece" draggable="true" ondragstart="drag(event)">♘</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 14}">
-        <div id="{!unique}_whiteBishop" class="piece" draggable="true" ondragstart="drag(event)">♗</div>
+        <div id="{!unique}_whiteBishop" class="piece white_piece" draggable="true" ondragstart="drag(event)">♗</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 15}">
-        <div id="{!unique}_whiteQueen" class="piece" draggable="true" ondragstart="drag(event)">♕</div>
+        <div id="{!unique}_whiteQueen" class="piece white_piece" draggable="true" ondragstart="drag(event)">♕</div>
     </apex:outputPanel>
     <apex:outputPanel rendered="{!pieceValue == 16}">
-        <div id="whiteKing" class="piece" draggable="true" ondragstart="drag(event)">♔</div>
+        <div id="whiteKing" class="piece white_piece" draggable="true" ondragstart="drag(event)">♔</div>
     </apex:outputPanel>
 </apex:component>

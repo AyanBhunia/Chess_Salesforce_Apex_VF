@@ -231,7 +231,7 @@ public class Chess {
         }
     }
 
-
+    @RemoteAction
     public static void setnewboard(){
         initialize_board();
         board.clear();
@@ -262,6 +262,41 @@ public class Chess {
         delete [SELECT Id FROM chessBoardMove__c];
         
         initialize_board_moves();
+    }
+
+    @RemoteAction
+    public static Integer chech_if_board_okay()
+    {
+        integer c=[SELECT count() FROM chessBoard__c];
+        if(c!=8)
+        {
+            delete [SELECT id FROM chessBoard__c];
+            board= new List<List<integer>>();
+            List<chessBoard__c> testData = new List<chessBoard__c>{
+                new chessBoard__c(row__c = 1, A__c = 2, B__c = 3, C__c = 4, D__c = 5, E__c = 6, F__c = 4, G__c = 3, H__c = 2),
+                new chessBoard__c(row__c = 2, A__c = 1, B__c = 1, C__c = 1, D__c = 1, E__c = 1, F__c = 1, G__c = 1, H__c = 1),
+                new chessBoard__c(row__c = 3, A__c = 0, B__c = 0, C__c = 0, D__c = 0, E__c = 0, F__c = 0, G__c = 0, H__c = 0),
+                new chessBoard__c(row__c = 4, A__c = 0, B__c = 0, C__c = 0, D__c = 0, E__c = 0, F__c = 0, G__c = 0, H__c = 0),
+                new chessBoard__c(row__c = 5, A__c = 0, B__c = 0, C__c = 0, D__c = 0, E__c = 0, F__c = 0, G__c = 0, H__c = 0),
+                new chessBoard__c(row__c = 6, A__c = 0, B__c = 0, C__c = 0, D__c = 0, E__c = 0, F__c = 0, G__c = 0, H__c = 0),
+                new chessBoard__c(row__c = 7, A__c = 11, B__c = 11, C__c = 11, D__c = 11, E__c = 11, F__c = 11, G__c = 11, H__c = 11),
+                new chessBoard__c(row__c = 8, A__c = 12, B__c = 13, C__c = 14, D__c = 15, E__c = 16, F__c = 14, G__c = 13, H__c = 12)
+            };
+            insert testData;
+
+            return 1;
+        }
+
+        return 0;
+    }
+
+    @RemoteAction
+    public static list<chessBoardMove__c> previous_moves_data()
+    {
+        chess_moves =new list<chessBoardMove__c>();
+        chess_moves= [select row__c ,color__c, check__c,from_x__c,from_y__c,to_x__c,to_y__c from chessBoardMove__c ORDER BY row__c DESC limit 1];
+
+        return chess_moves;
     }
 
     @RemoteAction
@@ -320,7 +355,14 @@ public class Chess {
     }
 
     @RemoteAction
-    public static String updateBoard(Integer fromX, Integer fromY, Integer toX, Integer toY) {
+    public static String updateBoard(Integer fromX, Integer fromY, Integer toX, Integer toY, Integer cvalue) {
+
+        
+        initialize_board();
+        if(board[fromX][fromy]/10 != cvalue)
+        {
+            return 'need to update';
+        }
         
         find_available_positions(fromX, fromY);
         
@@ -393,8 +435,29 @@ public class Chess {
     }
 
     @RemoteAction
+    public static String postChessData(String data) {
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('https://chess-api.com/v1'); // Replace with your API endpoint
+        request.setMethod('POST');
+        request.setHeader('Content-Type', 'application/json');
+        request.setBody(data);
+
+        HttpResponse response = http.send(request);
+
+        if (response.getStatusCode() == 200) {
+            return response.getBody();
+        } else {
+            throw new AuraHandledException('Error from API: ' + response.getStatus() + ' - ' + response.getStatusCode());
+        }
+    }
+
+
+    @RemoteAction
     public static pair_list updateAvailable(Integer fromX, Integer fromY) {
 
+        
+        initialize_board();
         find_available_positions(fromX, fromY);
         
         // system.debug('enteret update available '+fromX+','+fromY);
@@ -404,7 +467,6 @@ public class Chess {
 
     public static void find_available_positions(Integer fromX, Integer fromY)
     {
-        initialize_board();
         // System.debug('entered avaiable');
         // System.debug('x= '+fromX+', y='+fromY+'; 1st='+board[fromX][fromY]);
         // system.debug(math.mod(board[fromX][fromY],10));
@@ -535,7 +597,14 @@ public class Chess {
         }
         fen+=' ';
         fen+=color==1?'b':'w';
-        fen+=' - - 0 '+move_count;
+        fen+=' - - 0 ';
+        if(move_count=='0')
+        {
+            fen+='1';
+        }
+        else {
+            fen+=move_count;   
+        }
 
         // System.debug(board);
         // System.debug(fen);
