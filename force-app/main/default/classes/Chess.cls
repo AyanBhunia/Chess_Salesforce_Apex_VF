@@ -221,11 +221,11 @@ public class Chess {
         whitelist=new List<String>();
         for (chessBoardMove__c row : chess_moves) {
             if (row.capture__c!=0) {
-                if (row.capture__c<10) {
+                if (row.color__c==1) {
                     blacklist.add(getPieceSymbol((Integer)row.capture__c));
                 }
                 else {
-                    whitelist.add(getPieceSymbol((Integer)row.capture__c));
+                    whitelist.add(getPieceSymbol((Integer)row.capture__c+10));
                 }
             }
         }
@@ -381,7 +381,7 @@ public class Chess {
             new_move.from_y__c=fromY;
             new_move.to_x__c=toX;
             new_move.to_y__c=toY;
-            new_move.capture__c=board[toX][toY];
+            new_move.capture__c=math.mod(board[toX][toY],10);
             new_move.check__c= 0;
 
             setValueAt(toX,toY,getValueAt(fromX,fromY));
