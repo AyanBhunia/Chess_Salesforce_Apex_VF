@@ -32,6 +32,7 @@
                     width: -webkit-fill-available;
                     grid-template:
                     "controls options"
+                    "slider slider"
                     "chess_move chess_move" !important;
                     margin: 10px 0px 0px 0px !important;
                     align-content: center !important;
@@ -71,7 +72,7 @@
                 transition: transform .1s linear;
                 position: relative;
                 border: 11px solid #040202db;
-                box-shadow: 0px 2px 10px 6px rgb(0 0 0);
+                box-shadow: 0px 0px 10px 6px rgb(0 0 0);
                 display: inline-grid;
                 grid-template-areas: "up up up"
                                         "left box right"
@@ -309,6 +310,7 @@
                 display: inline-grid;
                 grid-template-areas:
                     "controls"
+                    "slider"
                     "chess_move"
                     "options";
                 align-content: space-between;
@@ -322,7 +324,7 @@
                 box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
                 margin: 2px 5px 2px 5px;
                 background-color: #3d372d;
-                height: 90px;
+                height: 70px;
             }
 
             .options{
@@ -330,7 +332,7 @@
                 grid-area: options;
                 box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
                 margin: 2px 5px 2px 5px;
-                height: 90px;
+                height: 70px;
                 align-items: center;
                 justify-content: space-around;
                 background-color: #3d372d;
@@ -400,6 +402,10 @@
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'%3E%3Cpath d='M17.252 12.49c-.284 2.365-1.833 3.31-2.502 3.996c-.67.688-.55.825-.505 1.834a.916.916 0 0 1-.916.971h-2.658a.92.92 0 0 1-.917-.971c0-.99.092-1.22-.504-1.834c-.76-.76-2.548-1.833-2.548-4.784a5.307 5.307 0 1 1 10.55.788'/%3E%3Cpath d='M10.46 19.236v1.512c0 .413.23.752.513.752h2.053c.285 0 .514-.34.514-.752v-1.512m-2.32-10.54a2.227 2.227 0 0 0-2.226 2.227m10.338.981h1.834m-3.68-6.012l1.301-1.301M18.486 17l1.301 1.3M12 2.377V3.86m-6.76.73l1.292 1.302M4.24 18.3L5.532 17m-.864-5.096H2.835'/%3E%3C/g%3E%3C/svg%3E");
             }
 
+            .next{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='m15 17l5-5l-5-5'/%3E%3Cpath d='M4 18v-2a4 4 0 0 1 4-4h12'/%3E%3C/g%3E%3C/svg%3E");
+            }
+
             .new_window{
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413T19 21zm4.7-5.3l-1.4-1.4L17.6 5H14V3h7v7h-2V6.4z'/%3E%3C/svg%3E");
             }
@@ -432,49 +438,104 @@
 
             /* Styling for the big box */
 
-        .big-box {
-        width: 50px; /* Size of the big box */
-        height: 50px;
-        border: 2px solid black;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-            box-shadow: 0px 0px 10px 3px rgb(0 0 0 / 60%);
-        }
+            .big-box {
+                width: 50px; /* Size of the big box */
+                height: 50px;
+                border: 2px solid black;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0px 0px 10px 3px rgb(0 0 0 / 60%);
+            }
 
-        /* Styling for the small square */
-        .small-square {
-        width: 90%;
-        height: 90%;
-        background-color: white;
-        transition: transform .1s linear , background-color 2s ease-in-out; /* Smooth rotation and color transition */
-        position: absolute;
-        transform-origin: center; /* Ensure scaling happens from the center */
-            box-shadow: inset 0px 0px 10px 3px rgb(0 0 0 / 60%);
-        }
+            /* Styling for the small square */
+            .small-square {
+                width: 90%;
+                height: 90%;
+                background-color: white;
+                transition: transform .1s linear , background-color 2s ease-in-out; /* Smooth rotation and color transition */
+                position: absolute;
+                transform-origin: center; /* Ensure scaling happens from the center */
+                box-shadow: inset 0px 0px 10px 3px rgb(0 0 0 / 60%);
+            }
 
-        .rotate_this{
-            rotate: 180deg;
-        }
+            .rotate_this{
+                rotate: 180deg;
+            }
 
-        .flip_board{
-            width: 50px;
-            height: 50px;
-            background-color: #0000004f;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 30px 30px;
-            border: none;
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M21 13H3a1 1 0 0 1 0-2h18a1 1 0 0 1 0 2' opacity='0.8'/%3E%3Cpath fill='black' d='m12 21l5-5H7z'/%3E%3Cpath fill='black' d='M12 22a1 1 0 0 1-.707-.293l-5-5A1 1 0 0 1 7 15h10a1 1 0 0 1 .707 1.707l-5 5A1 1 0 0 1 12 22m-2.586-5L12 19.586L14.586 17Z'/%3E%3Cpath fill='black' d='M12 4a.99.99 0 0 1-.92-1.38a1 1 0 0 1 .21-.33a1 1 0 0 1 1.09-.21a1 1 0 0 1 .33.21A1.05 1.05 0 0 1 13 3a.84.84 0 0 1-.08.38a1.2 1.2 0 0 1-.21.33A1 1 0 0 1 12 4M8.79 6.21a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29M7 9a.99.99 0 0 1-1-1a1 1 0 0 1 1.71-.71A1.05 1.05 0 0 1 8 8a.99.99 0 0 1-1 1m5.67-1a.997.997 0 0 1 1-1a1.003 1.003 0 0 1 1 1a1.003 1.003 0 0 1-1 1a.997.997 0 0 1-1-1M9.33 8a1.003 1.003 0 0 1 1-1a.997.997 0 0 1 1 1a.997.997 0 0 1-1 1a1.003 1.003 0 0 1-1-1M17 9a.99.99 0 0 1-1-1a1 1 0 1 1 2 0a.99.99 0 0 1-1 1m-3.21-2.79a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29' opacity='0.6'/%3E%3C/svg%3E");
-            position: relative;
-        }
+            .flip_board{
+                width: 50px;
+                height: 50px;
+                background-color: #0000004f;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 30px 30px;
+                border: none;
+                cursor: pointer;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M21 13H3a1 1 0 0 1 0-2h18a1 1 0 0 1 0 2' opacity='0.8'/%3E%3Cpath fill='black' d='m12 21l5-5H7z'/%3E%3Cpath fill='black' d='M12 22a1 1 0 0 1-.707-.293l-5-5A1 1 0 0 1 7 15h10a1 1 0 0 1 .707 1.707l-5 5A1 1 0 0 1 12 22m-2.586-5L12 19.586L14.586 17Z'/%3E%3Cpath fill='black' d='M12 4a.99.99 0 0 1-.92-1.38a1 1 0 0 1 .21-.33a1 1 0 0 1 1.09-.21a1 1 0 0 1 .33.21A1.05 1.05 0 0 1 13 3a.84.84 0 0 1-.08.38a1.2 1.2 0 0 1-.21.33A1 1 0 0 1 12 4M8.79 6.21a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29M7 9a.99.99 0 0 1-1-1a1 1 0 0 1 1.71-.71A1.05 1.05 0 0 1 8 8a.99.99 0 0 1-1 1m5.67-1a.997.997 0 0 1 1-1a1.003 1.003 0 0 1 1 1a1.003 1.003 0 0 1-1 1a.997.997 0 0 1-1-1M9.33 8a1.003 1.003 0 0 1 1-1a.997.997 0 0 1 1 1a.997.997 0 0 1-1 1a1.003 1.003 0 0 1-1-1M17 9a.99.99 0 0 1-1-1a1 1 0 1 1 2 0a.99.99 0 0 1-1 1m-3.21-2.79a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29' opacity='0.6'/%3E%3C/svg%3E");
+                position: relative;
+            }
 
-        .flip_board_White{
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M21 13H3a1 1 0 0 1 0-2h18a1 1 0 0 1 0 2' opacity='0.8'/%3E%3Cpath fill='white' d='m12 21l5-5H7z'/%3E%3Cpath fill='white' d='M12 22a1 1 0 0 1-.707-.293l-5-5A1 1 0 0 1 7 15h10a1 1 0 0 1 .707 1.707l-5 5A1 1 0 0 1 12 22m-2.586-5L12 19.586L14.586 17Z'/%3E%3Cpath fill='white' d='M12 4a.99.99 0 0 1-.92-1.38a1 1 0 0 1 .21-.33a1 1 0 0 1 1.09-.21a1 1 0 0 1 .33.21A1.05 1.05 0 0 1 13 3a.84.84 0 0 1-.08.38a1.2 1.2 0 0 1-.21.33A1 1 0 0 1 12 4M8.79 6.21a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29M7 9a.99.99 0 0 1-1-1a1 1 0 0 1 1.71-.71A1.05 1.05 0 0 1 8 8a.99.99 0 0 1-1 1m5.67-1a.997.997 0 0 1 1-1a1.003 1.003 0 0 1 1 1a1.003 1.003 0 0 1-1 1a.997.997 0 0 1-1-1M9.33 8a1.003 1.003 0 0 1 1-1a.997.997 0 0 1 1 1a.997.997 0 0 1-1 1a1.003 1.003 0 0 1-1-1M17 9a.99.99 0 0 1-1-1a1 1 0 1 1 2 0a.99.99 0 0 1-1 1m-3.21-2.79a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29' opacity='0.6'/%3E%3C/svg%3E") !important;
-        }
+            .flip_board_White{
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M21 13H3a1 1 0 0 1 0-2h18a1 1 0 0 1 0 2' opacity='0.8'/%3E%3Cpath fill='white' d='m12 21l5-5H7z'/%3E%3Cpath fill='white' d='M12 22a1 1 0 0 1-.707-.293l-5-5A1 1 0 0 1 7 15h10a1 1 0 0 1 .707 1.707l-5 5A1 1 0 0 1 12 22m-2.586-5L12 19.586L14.586 17Z'/%3E%3Cpath fill='white' d='M12 4a.99.99 0 0 1-.92-1.38a1 1 0 0 1 .21-.33a1 1 0 0 1 1.09-.21a1 1 0 0 1 .33.21A1.05 1.05 0 0 1 13 3a.84.84 0 0 1-.08.38a1.2 1.2 0 0 1-.21.33A1 1 0 0 1 12 4M8.79 6.21a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29M7 9a.99.99 0 0 1-1-1a1 1 0 0 1 1.71-.71A1.05 1.05 0 0 1 8 8a.99.99 0 0 1-1 1m5.67-1a.997.997 0 0 1 1-1a1.003 1.003 0 0 1 1 1a1.003 1.003 0 0 1-1 1a.997.997 0 0 1-1-1M9.33 8a1.003 1.003 0 0 1 1-1a.997.997 0 0 1 1 1a.997.997 0 0 1-1 1a1.003 1.003 0 0 1-1-1M17 9a.99.99 0 0 1-1-1a1 1 0 1 1 2 0a.99.99 0 0 1-1 1m-3.21-2.79a1.01 1.01 0 0 1 0-1.42a1.007 1.007 0 0 1 1.42 0a1.01 1.01 0 0 1 0 1.42a1.03 1.03 0 0 1-.71.29a1.03 1.03 0 0 1-.71-.29' opacity='0.6'/%3E%3C/svg%3E") !important;
+            }
+
+            .stuff {
+                padding: 50px;
+                max-width: 900px;
+                margin: auto;
+            }
+
+            .horizontal-slider {
+                width: 70%;
+                height: 60%;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .slider-track {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                align-items: center;
+                position: relative;
+                justify-content: space-around;
+            }
+
+            .slider-track .bar {
+                width: 2%;
+                height: 70%;
+                background-color: gray;
+                transition: background-color 0.5s, height 0.3s, width 0.3s;
+                border: 2px red;
+                border-radius: 8px;
+            }
+
+            .slider-track .bar.active {
+                background-color: #b80202;
+                height: 90%;
+                width: 3%;
+            }
+
+            .slider-track .bar.selected {
+                height: 100%;
+                background-color: #c60000;
+                width: 3.5%;
+            }
+
+            .slider{
+                display: inline-flex;
+                grid-area: slider;
+                justify-content: space-evenly;
+                align-items: center;
+                box-shadow: 0px 0px 5px 4px rgb(0 0 0 / 60%);
+                margin: 2px 5px 2px 5px;
+                background-color: #2b2720;
+                height: 55px;
+            }
+
 
 
         </style>
@@ -946,6 +1007,54 @@
                     })
             }
 
+            function next() {
+                Chess.share_fen(
+                    function (result, ev) {
+                        postChessApi({ fen: result }).then((data) => {
+                            console.log(data);
+
+                            fromX = (8 - data.fromNumeric % 10);
+                            fromY = (Math.floor(data.fromNumeric / 10) - 1);
+                            toX = (8 - data.toNumeric % 10);
+                            toY = (Math.floor(data.toNumeric / 10) - 1);
+
+                            console.log('from ' + fromX + ' ' + fromY, 'to ' + toX + ' ' + toY);
+                            Chess.updateBoard(
+                                fromX,
+                                fromY,
+                                toX,
+                                toY,
+                                parseInt(colorValue.value),
+                                function (result, ev) {
+                                    if (ev.status) {
+                                        // console.log(ev.status);
+                                        console.log('call_CPU_move_done ' + result);
+                                        // console.log(result[0], result[1]);
+
+                                        rerendermovesPanel();
+                                        rerenderchessBoardPanel();
+
+                                        setTimeout(function () {
+
+                                            label_for_switch2.click();
+                                            playMoveSound();
+                                            console.log('done CPU move');
+
+                                            remove_class('target');
+
+                                            document.querySelector("div.chessBoard div[data-x='" + fromX + "'][data-y='" + fromY + "']").classList.add('target');
+                                            document.querySelector("div.chessBoard div[data-x='" + toX + "'][data-y='" + toY + "']").classList.add('target');
+
+                                            sendMessageWS(result.substr(3));
+
+                                        }, 500);
+                                    }
+                                }
+                            )
+                        });
+                    })
+            }
+
             function Set_New_Board() {
                 check_flip_board();
                 if (colorValue.value == 0) {
@@ -1018,10 +1127,17 @@
             <div style="display: inline-grid;justify-content: center;grid-area: WholeBoard;">
                     
                     <div class="blacklist">
-                        <apex:outputPanel id="blacklist" style="display: inline-flex; align-items: flex-end;">
+                        <apex:outputPanel id="blacklist" style="display: inline-flex; align-items: flex-start;">
                             <div class="picture">♚</div>
                             <div>
-                            <div style=" font-size: 24px;font-weight: bold;">Black</div>
+                            <div style=" font-size: 24px;font-weight: bold;">
+                                Black
+                                <span style="font-size: 16px;font-weight: 600;">
+                                     (
+                                    <span id="black_elo"></span>
+                                    )
+                                </span>
+                            </div>
                             <div style="display: inline-flex;font-size: 22px;">
                                 <apex:repeat value="{!blacklist}" var="xxx">
                                     <div>{!xxx}</div>
@@ -1085,11 +1201,17 @@
                     </apex:outputPanel>
 
                     <div class="whitelist">
-                        <apex:outputPanel id="whitelist" style="display: inline-flex; align-items: flex-end;">
+                        <apex:outputPanel id="whitelist" style="display: inline-flex; align-items: flex-start;">
                             <div class="picture">♔</div>
                             <div>
                                 <div style=" font-size: 24px;font-weight: bold;">
-                                    White</div>
+                                    White
+                                    <span style="font-size: 16px;font-weight: 600;">
+                                        (
+                                        <span id="white_elo"></span>
+                                        )
+                                    </span>
+                                </div>
                                 <div style="display: inline-flex;font-size: 22px;">
                                     <apex:repeat value="{!whitelist}" var="xxx">
                                         <div>{!xxx}</div>
@@ -1135,17 +1257,24 @@
                         <!-- <apex:commandButton value="Update Board" action="{!initialize_board}" reRender="chessBoard" /> -->
                         <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" oncomplete="Set_New_Board()" reRender="chessBoard,blacklist, whitelist,chessMoves"
                         />
-                        <apex:commandButton styleClass="svg-bg-button undo" title="Undo" oncomplete="back()" />
+                        <apex:commandButton styleClass="svg-bg-button undo" title="Previous Move (Irreversible)" oncomplete="back()" />
                     </apex:form>
 
-                        <input type="button" class="svg-bg-button hint" title="Hint" onclick="hint()">
-                        </input>
+                        <input type="button" class="svg-bg-button next" title="Next Move (CPU)" onclick="next()"></input>
 
                         <div>
                             <input type="button" class="svg-bg-button share" title="Share" onclick="share()"></input>
                             <input type="button" class="svg-bg-button new_window" title="New Window" onclick="new_window()"></input>
                         </div>
                         
+                </div>
+
+                <div class="slider">
+                    <input type="button" class="svg-bg-button hint" title="Hint" onclick="hint()"></input>
+                    <div class="horizontal-slider">
+                        <div class="slider-track">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="chess_move">
@@ -1166,14 +1295,11 @@
             
         </div>
 
-
-
-        
-
         <script>
             // 1. Create a handy function for sending requests:
             async function postChessApi(data = {}) {
                 // Convert data to JSON string
+                data.depth = currentValue+1;
                 const dataString = JSON.stringify(data);
                 return new Promise((resolve, reject) => {
                     Visualforce.remoting.Manager.invokeAction(
@@ -1217,8 +1343,8 @@
                 };
 
                 ws.onclose = (event) => {
-                    console.log("ws WebSocket connection closed. Reconnecting...");
-                    setTimeout(connectWS, 1000); // Reconnect after 1 second
+                    console.log("ws WebSocket connection closed.");
+                    // setTimeout(connectWS, 1000); // Reconnect after 1 second
                 };
 
                 ws.onerror = (error) => {
@@ -1237,6 +1363,9 @@
 
                 ws_hint.onmessage = (event) => {
                     const chessApiMessage = JSON.parse(event.data);
+
+                    // console.log('ws_hint: ', chessApiMessage);
+
                     if('error' in chessApiMessage){
                     console.log('ws_hint: ', chessApiMessage);}
 
@@ -1258,10 +1387,10 @@
                 //     setTimeout(connectWSHint, 1000); // Reconnect after 1 second
                 // };
 
-                // ws_hint.onerror = (error) => {
-                //     console.error("ws_hint WebSocket error: ", error);
-                //     ws_hint.close(); // Close on error to trigger reconnect
-                // };
+                ws_hint.onerror = (error) => {
+                    console.error("ws_hint WebSocket error: ", error);
+                    ws_hint.close(); // Close on error to trigger reconnect
+                };
             }
 
             // Initialize both WebSocket connections
@@ -1273,7 +1402,7 @@
                 // console.log('ws send ',fen);
                 console.log('before ws ', fen);
                 if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ fen }));
+                    ws.send(JSON.stringify({ fen, depth: currentValue + 1  }));
                 } else {
                     console.warn("ws WebSocket is not open. Reconnecting...");
                     connectWS(); // Reconnect if needed
@@ -1285,7 +1414,7 @@
             function sendMessageWS_HINT(fen) {
                 // console.log('ws_hint send ',fen);
                 if (ws_hint && ws_hint.readyState === WebSocket.OPEN) {
-                    ws_hint.send(JSON.stringify({ fen }));
+                    ws_hint.send(JSON.stringify({ fen,depth: currentValue+1 }));
                 } else {
                     console.warn("ws_hint WebSocket is not open. Reconnecting...");
                     connectWSHint(); // Reconnect if needed
@@ -1333,74 +1462,163 @@
             
             const smallSquare = document.querySelector('.small-square');
             const c_board = document.querySelector('.makeboard');
-                let rotation = 0;
+            
+            let rotation = 0;
 
-                function flip_board() {
-                    rotation += 180; // Increment rotation by 180 degrees
+            function flip_board() {
+                rotation += 180; // Increment rotation by 180 degrees
 
-                    if(rotation % 360 === 180)
-                    {
-                        smallSquare.style.backgroundColor = 'black';
-                        document.querySelector('.blacklist').style.gridRow = 3;
-                        document.querySelector('.whitelist').style.gridRow = 1;
-                    }
-                    else
-                    {
-                        smallSquare.style.backgroundColor = 'white';
-                        document.querySelector('.blacklist').style.gridRow = '';
-                        document.querySelector('.whitelist').style.gridRow = '';
-                    }
-
-                    
-
-                    time_interval = 100;
-
-                    setTimeout(() => {
-                        smallSquare.style.transform = `rotate(${rotation - 135}deg) scale(0.7)`;
-                        c_board.style.transform = `rotate(${rotation - 135}deg) scale(0.7)`;
-                    }, 0);
-
-                    setTimeout(() => {
-                        smallSquare.style.transform = `rotate(${rotation - 90}deg) scale(0.6)`;
-                        c_board.style.transform = `rotate(${rotation - 90}deg) scale(0.6)`;
-                    }, time_interval);
-
-                    setTimeout(() => {
-                        smallSquare.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
-                        c_board.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
-                        
-                        document.querySelectorAll('.square, .box').forEach(div => {
-                            div.classList.toggle('rotate_this');
-                        });
-                        
-                        document.querySelector('.flip_board').classList.toggle('flip_board_White');
-                    }, 2 * time_interval);
-
-                    setTimeout(() => {
-                        smallSquare.style.transform = `rotate(${rotation - 15}deg) scale(0.7)`; 
-                        c_board.style.transform = `rotate(${rotation - 15}deg) scale(0.7)`; 
-                    }, 3 * time_interval);
-
-                    setTimeout(() => {
-                        smallSquare.style.transform = `rotate(${rotation}deg) scale(1)`;
-                        c_board.style.transform = `rotate(${rotation}deg) scale(1)`;
-                    }, 3.5 * time_interval);
-
-                };
-
-                function check_flip_board()
+                if(rotation % 360 === 180)
                 {
-                    if (rotation % 360 === 180)
-                    {
-                        document.querySelectorAll('.square, .box').forEach(div => {
-                            if(!(div.classList.contains('rotate_this')))
-                            {
-                                div.classList.add('rotate_this');
-                            }
-                        });
-                    }
+                    smallSquare.style.backgroundColor = 'black';
+                    document.querySelector('.blacklist').style.gridRow = 3;
+                    document.querySelector('.whitelist').style.gridRow = 1;
+                }
+                else
+                {
+                    smallSquare.style.backgroundColor = 'white';
+                    document.querySelector('.blacklist').style.gridRow = '';
+                    document.querySelector('.whitelist').style.gridRow = '';
                 }
 
+                time_interval = 100;
+
+                [enemy_elo, player_elo] = [player_elo, enemy_elo];
+                elo_update();
+
+                setTimeout(() => {
+                    smallSquare.style.transform = `rotate(${rotation - 135}deg) scale(0.7)`;
+                    c_board.style.transform = `rotate(${rotation - 135}deg) scale(0.7)`;
+                }, 0);
+
+                setTimeout(() => {
+                    smallSquare.style.transform = `rotate(${rotation - 90}deg) scale(0.6)`;
+                    c_board.style.transform = `rotate(${rotation - 90}deg) scale(0.6)`;
+                }, time_interval);
+
+                setTimeout(() => {
+                    smallSquare.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
+                    c_board.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
+                    
+                    document.querySelectorAll('.square, .box').forEach(div => {
+                        div.classList.toggle('rotate_this');
+                    });
+                    
+                    document.querySelector('.flip_board').classList.toggle('flip_board_White');
+                }, 2 * time_interval);
+
+                setTimeout(() => {
+                    smallSquare.style.transform = `rotate(${rotation - 15}deg) scale(0.7)`; 
+                    c_board.style.transform = `rotate(${rotation - 15}deg) scale(0.7)`; 
+                }, 3 * time_interval);
+
+                setTimeout(() => {
+                    smallSquare.style.transform = `rotate(${rotation}deg) scale(1)`;
+                    c_board.style.transform = `rotate(${rotation}deg) scale(1)`;
+                }, 3.5 * time_interval);
+
+            };
+
+            function check_flip_board()
+            {
+                if (rotation % 360 === 180)
+                {
+                    document.querySelectorAll('.square, .box').forEach(div => {
+                        if(!(div.classList.contains('rotate_this')))
+                        {
+                            div.classList.add('rotate_this');
+                        }
+                    });
+                    enemy_elo = document.getElementById('white_elo');
+                    player_elo = document.getElementById('black_elo');
+                }
+                else
+                {
+                    enemy_elo = document.getElementById('black_elo');
+                    player_elo = document.getElementById('white_elo');
+                }
+            }
+
+            function elo_update() {
+                enemy_elo.textContent = (currentValue + 1) * 66 + 1640;
+                player_elo.textContent = ['😁', '😄', '😃', '😀', '😊', '😏', '😎', '🙂', '😶', '😐', '😑', '🙁', '😕', '☹️', '😟', '😩', '😢', '💀'][currentValue];
+            }
+
+            
+            let currentValue = 9;
+            let enemy_elo = document.getElementById('black_elo');
+            let player_elo = document.getElementById('white_elo');
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                const sliderTrack = document.querySelector('.slider-track');
+                const totalBars = 18;
+                let isDragging = false;
+
+                // Create and append bars
+                for (let i = 0; i < totalBars; i++) {
+                    const bar = document.createElement('div');
+                    bar.classList.add('bar');
+                    sliderTrack.appendChild(bar);
+                }
+
+                // Function to update the bars based on the current value
+                function updateBars(value) {
+                    const bars = document.querySelectorAll('.slider-track .bar');
+                    bars.forEach((bar, index) => {
+                        if (index < value) {
+                            bar.classList.add('active');
+                            bar.classList.remove('selected');
+                        } else if (index === value) {
+                            bar.classList.add('selected');
+                            bar.classList.remove('active');
+                        } else {
+                            bar.classList.remove('active', 'selected');
+                        }
+                    });
+
+                    elo_update();
+                }
+
+                // Function to handle mouse and touch move
+                function handleMove(event) {
+                    if (!isDragging) return;
+                    const rect = sliderTrack.getBoundingClientRect();
+                    const clientX = event.clientX || event.touches[0].clientX; // Handle touch
+                    const mouseX = clientX - rect.left;
+                    const newValue = Math.floor((mouseX / rect.width) * totalBars);
+                    currentValue = Math.max(0, Math.min(totalBars - 1, newValue));
+                    updateBars(currentValue);
+                }
+
+                // Start dragging
+                function startDragging(event) {
+                    const rect = sliderTrack.getBoundingClientRect();
+                    const clientX = event.clientX || event.touches[0].clientX; // Handle touch
+                    currentValue = Math.floor((clientX - rect.left) / rect.width * totalBars);
+                    currentValue = Math.max(0, Math.min(totalBars - 1, currentValue));
+                    updateBars(currentValue);
+                    isDragging = true;
+                    event.preventDefault(); // Prevent default touch action
+                }
+
+                // Stop dragging
+                function stopDragging() {
+                    isDragging = false;
+                }
+
+                // Mouse and touch event listeners
+                sliderTrack.addEventListener('mousedown', startDragging);
+                sliderTrack.addEventListener('touchstart', startDragging);
+                document.addEventListener('mouseup', stopDragging);
+                document.addEventListener('touchend', stopDragging);
+                document.addEventListener('mousemove', handleMove);
+                document.addEventListener('touchmove', handleMove);
+
+                // Initialize the bars
+                updateBars(currentValue);
+            });
+
+            
             </script>
     </body>
 
