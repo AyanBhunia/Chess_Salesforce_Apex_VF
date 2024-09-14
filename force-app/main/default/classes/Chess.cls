@@ -311,8 +311,12 @@ public class Chess {
             return;
         }
 
+        // system.debug((Integer)chess_moves[0].color__c!=0?(Integer)chess_moves[0].capture__c:(Integer)chess_moves[0].capture__c+10);
+
         setValueAt((Integer)chess_moves[0].from_x__c,(Integer)chess_moves[0].from_y__c,getValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c));
-        setValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c,(Integer)chess_moves[0].capture__c);
+        setValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c,
+            (Integer)chess_moves[0].capture__c==0 ? 0 : 
+                (Integer)chess_moves[0].color__c!=0 ? (Integer)chess_moves[0].capture__c : (Integer)chess_moves[0].capture__c+10);
 
         update chessBoardRecords[(Integer)chess_moves[0].to_x__c];
         update chessBoardRecords[(Integer)chess_moves[0].from_x__c];
