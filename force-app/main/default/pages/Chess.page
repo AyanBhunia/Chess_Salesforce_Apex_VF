@@ -66,7 +66,7 @@
                 justify-content: center;
                 align-items: center;
                 font-size: larger;
-            } 
+            }
 
             .makeboard {
                 transition: transform .1s linear;
@@ -283,8 +283,8 @@
 
             .bar_container{
                 height: 600px;
-                background-color: #fff; margin: 65px 10px 65px 5px;
-                box-shadow: -4px 0px 8px 4px rgb(0 0 0 / 60%);
+                background-color: #d7d7d7;; margin: 65px 10px 65px 5px;
+                box-shadow: 0px 0px 8px 4px rgb(0 0 0 / 60%);
                 grid-area: bar_container;
             }
 
@@ -294,14 +294,29 @@
                 justify-content: center;
                 /* padding-top: 10px;
                 padding-bottom: 10px; */
-                color: white;
                 height: 48%;
                 width: 25px;
                 background-color: #000000;
                 transition-property: height;
                 transition-duration: 0.7s;
                 transition-timing-function: ease-in-out;
+                border-left: 1px solid black;
+                border-right: 1px solid black;
             }
+
+            .eval_bar_text{
+                position: relative;
+                bottom: -15px;
+                color: black;
+                transition: bottom 0.3s ease;
+            }
+
+            .eval_bar_text.eval_bar_text_up{
+                position: relative;
+                color: white;
+                bottom: 3px;
+            }
+
 
             .right_panel{
                 margin: 0px 5px 0px 5px;
@@ -860,7 +875,7 @@
                 Visualforce.remoting.Manager.invokeAction(
                     '{!$RemoteAction.Chess.back_back}', 
                     function (result, event) {
-                        if (event.status) {
+                        if (event.status && result=='done') {
                             playMoveSound();
                             label_for_switch2.click();
                             rerenderchessBoardPanel(); 
@@ -872,7 +887,7 @@
                                     '{!$RemoteAction.Chess.back_back}',
                                     function (result, event) {
                                         isRequestInProgress = false;
-                                        if (event.status) {
+                                        if (event.status && result == 'done') {
                                             playMoveSound();
                                             label_for_switch2.click();
                                             rerenderchessBoardPanel();
@@ -880,7 +895,7 @@
 
                                             Chess.share_fen(
                                                 function (result, ev) {
-                                                    console.log('fen ', result);
+                                                    console.log('back fen ', result);
                                                     sendMessageWS(result);
 
                                                     chech_previous_moves();
@@ -888,6 +903,7 @@
 
                                         } else {
                                             console.log('Error: ' + event.message);
+                                            isRequestInProgress = false;
                                         }
                                     }
                                 );
@@ -897,7 +913,7 @@
                                 isRequestInProgress = false;
                                 Chess.share_fen(
                                     function (result, ev) {
-                                        console.log('fen ', result);
+                                        console.log('back fen ', result);
                                         sendMessageWS(result);
 
                                         chech_previous_moves();
@@ -906,12 +922,85 @@
 
                         } else {
                             console.log('Error: ' + event.message);
+                            isRequestInProgress = false;
+                        }
+                    }
+                );
+            }
+
+            function next() {
+                if (isRequestInProgress) {
+                    return; // Exit if there is already an ongoing request
+                }
+
+                // Set the flag to indicate a request is in progress
+                isRequestInProgress = true;
+
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.Chess.next_next}', 
+                    function (result, event) {
+                        if (event.status && result == 'done') {
+                            playMoveSound();
+                            label_for_switch2.click();
+                            rerenderchessBoardPanel(); 
+                            rerendermovesPanel(); 
+
+                            if(switchValue.value == 1)
+                            {
+                                Visualforce.remoting.Manager.invokeAction(
+                                    '{!$RemoteAction.Chess.next_next}',
+                                    function (result, event) {
+                                        isRequestInProgress = false;
+                                        if (event.status && result == 'done') {
+                                            playMoveSound();
+                                            label_for_switch2.click();
+                                            rerenderchessBoardPanel();
+                                            rerendermovesPanel();
+
+                                            Chess.share_fen(
+                                                function (result, ev) {
+                                                    console.log('back fen ', result);
+                                                    sendMessageWS(result);
+
+                                                    chech_previous_moves();
+                                                })
+
+                                        } else {
+                                            console.log('Error: ' + event.message);
+                                            isRequestInProgress = false;
+                                        }
+                                    }
+                                );
+                            }
+                            else
+                            {
+                                isRequestInProgress = false;
+                                Chess.share_fen(
+                                    function (result, ev) {
+                                        console.log('back fen ', result);
+                                        sendMessageWS(result);
+
+                                        chech_previous_moves();
+                                    })
+                            }
+
+                        } else {
+                            console.log('Error: ' + event.message);
+                            isRequestInProgress = false;
                         }
                     }
                 );
             }
 
             function check_for_check(){
+                if (rotation % 360 === 180) {
+                    document.querySelectorAll('.square').forEach(div => {
+                        div.classList.add('rotate_this');
+                    });
+                }
+                document.querySelectorAll('.piece').forEach(div => {
+                    div.classList.add('show');
+                });
                 check_flip_board();
                 chech_previous_moves();
                 Chess.check_for_check(
@@ -962,9 +1051,9 @@
                                                 document.getElementById('whiteKing').closest('.square').classList.add('whitecheck');
                                             }
 
-                                            if (result[0].color__c== colorValue.value) {
-                                                label_for_switch2.click();
-                                            }
+                                            // if (result[0].color__c== colorValue.value) {
+                                            //     flip_board();
+                                            // }
 
 
                                         } else {
@@ -1007,66 +1096,32 @@
                     })
             }
 
-            function next() {
-                Chess.share_fen(
-                    function (result, ev) {
-                        postChessApi({ fen: result }).then((data) => {
-                            console.log(data);
-
-                            fromX = (8 - data.fromNumeric % 10);
-                            fromY = (Math.floor(data.fromNumeric / 10) - 1);
-                            toX = (8 - data.toNumeric % 10);
-                            toY = (Math.floor(data.toNumeric / 10) - 1);
-
-                            console.log('from ' + fromX + ' ' + fromY, 'to ' + toX + ' ' + toY);
-                            Chess.updateBoard(
-                                fromX,
-                                fromY,
-                                toX,
-                                toY,
-                                parseInt(colorValue.value),
-                                function (result, ev) {
-                                    if (ev.status) {
-                                        // console.log(ev.status);
-                                        console.log('call_CPU_move_done ' + result);
-                                        // console.log(result[0], result[1]);
-
-                                        rerendermovesPanel();
-                                        rerenderchessBoardPanel();
-
-                                        setTimeout(function () {
-
-                                            label_for_switch2.click();
-                                            playMoveSound();
-                                            console.log('done CPU move');
-
-                                            remove_class('target');
-
-                                            document.querySelector("div.chessBoard div[data-x='" + fromX + "'][data-y='" + fromY + "']").classList.add('target');
-                                            document.querySelector("div.chessBoard div[data-x='" + toX + "'][data-y='" + toY + "']").classList.add('target');
-
-                                            sendMessageWS(result.substr(3));
-
-                                        }, 500);
-                                    }
-                                }
-                            )
-                        });
-                    })
-            }
-
             function Set_New_Board() {
-                check_flip_board();
-                if (colorValue.value == 0) {
-                    label_for_switch2.click();
+                if (rotation % 360 === 180)
+                {
+                    // flip_board();
+                    if (colorValue.value == 1) { label_for_switch2.click() };
                 }
+                else
+                {
+                    if(colorValue.value == 0){label_for_switch2.click()};
+                }
+                // if (colorValue.value == 0) {
+                //     rotation % 360 === 180?label_for_switch2.click():;
+                // }
+                check_flip_board();
                 
-                document.querySelector('.eval_bar').innerText = '0.2';
-                document.querySelector('.eval_bar').style.height = '48%';
+                bar_text.innerText = '0.2';
+                bar.style.height = '48%';
+
+                bar_text.classList.remove('eval_bar_text_up');
+
             }
 
             function highlightWhitePieces() {
                 // List of white chess piece Unicode characters
+                elo_update();
+                
                 const whitePiecesRegex = /[♙♘♗♖♕♔]/g;
 
                 // Select all elements with the class 'move_grid_text'
@@ -1121,7 +1176,9 @@
         <div class="left_right">
 
             <div id="bar" class="bar_container">
-                    <div class="eval_bar">0.2</div>
+                    <div class="eval_bar">
+                        <div class="eval_bar_text">0.2</div>
+                    </div>
             </div>
 
             <div style="display: inline-grid;justify-content: center;grid-area: WholeBoard;">
@@ -1175,7 +1232,7 @@
                                                         <!-- {!counter_x}, {!counter_y} -->
                                                         <!-- {!board[counter_x][counter_y]} -->
                                                     <!-- </p> -->
-                                                    <c:chessPiece pieceValue="{!cell}" unique="{!counter_x}{!counter_y}" />
+                                                    <c:chessPiece pieceValue="{!cell}" unique="{!counter_x}{!counter_y}"/>
                                             </div>
                                             <apex:variable value="{!counter_y + 1}" var="counter_y" />
                                         </apex:repeat>
@@ -1224,7 +1281,6 @@
                 
             <div class="right_panel">
                 <div class="controls">
-                    <!-- <apex:form> -->
                         <input type="checkbox" id="switch" checked="checked" />
                         <label for="switch">
                             <div>CPU</div>
@@ -1232,7 +1288,7 @@
                         </label>
                         <input type="hidden" id="switchValue" value="1" />
 
-                        <div class="big-box">
+                        <div class="big-box" title="Flip Board">
                             <div class="small-square"></div>
                             <div class="flip_board" onclick="flip_board()"></div>
                         </div>
@@ -1243,9 +1299,6 @@
                             <div>BLACK</div>
                         </label>
                         <input type="hidden" id="colorValue" value="1" />
-
-                        
-                    <!-- </apex:form> -->
                 </div>
 
                 <div class="options">
@@ -1254,18 +1307,23 @@
                         />
                         <apex:actionFunction name="rerendermovesPanel" action="{!initialize_board_moves}" rerender="blacklist, whitelist,chessMoves" oncomplete="highlightWhitePieces()"
                         />
-                        <!-- <apex:commandButton value="Update Board" action="{!initialize_board}" reRender="chessBoard" /> -->
-                        <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" oncomplete="Set_New_Board()" reRender="chessBoard,blacklist, whitelist,chessMoves"
-                        />
-                        <apex:commandButton styleClass="svg-bg-button undo" title="Previous Move (Irreversible)" oncomplete="back()" />
+                        
+                        <apex:commandButton styleClass="svg-bg-button undo" title="Undo Previous Move" oncomplete="back()" />
+                        
+                        <input type="button" class="svg-bg-button next" title="Redo Next Move" onclick="next()"></input>
+
                     </apex:form>
 
-                        <input type="button" class="svg-bg-button next" title="Next Move (CPU)" onclick="next()"></input>
+                    <apex:form>
+                        <apex:commandButton styleClass="svg-bg-button start_new_game" title="Start New Game" action="{!setnewboard}" oncomplete="Set_New_Board()"
+                            reRender="chessBoard,blacklist, whitelist,chessMoves" />
+                    </apex:form>
 
-                        <div>
-                            <input type="button" class="svg-bg-button share" title="Share" onclick="share()"></input>
-                            <input type="button" class="svg-bg-button new_window" title="New Window" onclick="new_window()"></input>
-                        </div>
+
+                    <div>
+                        <input type="button" class="svg-bg-button share" title="Share" onclick="share()"></input>
+                        <input type="button" class="svg-bg-button new_window" title="Open in New Window" onclick="new_window()"></input>
+                    </div>
                         
                 </div>
 
@@ -1320,6 +1378,9 @@
 
             let ws, ws_hint;
 
+            let bar_text= document.querySelector('.eval_bar_text');
+            let bar = document.querySelector('.eval_bar');
+
             // Function to connect or reconnect the main WebSocket `ws`
             function connectWS() {
                 ws = new WebSocket('wss://chess-api.com/v1');
@@ -1336,9 +1397,18 @@
                     const chessApiMessage = JSON.parse(event.data);
                     // console.log('ws: ',chessApiMessage);
                     if ("winChance" in chessApiMessage) {
-                        console.log('ws: ', chessApiMessage['eval'].toFixed(1), parseInt(100 - chessApiMessage['winChance']) + '%');
-                        document.querySelector('.eval_bar').innerText = chessApiMessage['eval'].toFixed(1);
-                        document.querySelector('.eval_bar').style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
+                        // console.log('ws: ', chessApiMessage['eval'].toFixed(1), parseInt(100 - chessApiMessage['winChance']) + '%');
+                        bar_text.innerText = chessApiMessage['eval'].toFixed(1);
+                        bar.style.height = parseInt(100 - chessApiMessage['winChance']) + '%';
+
+                        if(chessApiMessage['eval']<0)
+                        {
+                            bar_text.classList.add('eval_bar_text_up');
+                        }
+                        else
+                        {
+                            bar_text.classList.remove('eval_bar_text_up');
+                        }
                     }
                 };
 
@@ -1431,6 +1501,8 @@
             const colorValue = document.getElementById('colorValue');
 
             const label_for_switch2 = document.querySelector("label[for=switch2]");
+            
+            let square_rule;
 
             function updateValue() {
                 switchValue.value = checkbox.checked ? '1' : '0';
@@ -1456,9 +1528,21 @@
             //     }, false);
 
             document.addEventListener('DOMContentLoaded', function () {
-                    chech_previous_moves();
-                    highlightWhitePieces();
-                }, false);
+                chech_previous_moves();
+                highlightWhitePieces();
+            }, false);
+
+            window.onload = function () {
+                var stylesheet = document.styleSheets[7];
+                for (var i = 0; i < stylesheet.cssRules.length; i++) {
+                    var rule = stylesheet.cssRules[i];
+
+                    // Check if the selectorText matches any of the specified selectors
+                    if (rule.selectorText === '.square') {
+                        square_rule = rule;
+                    }
+                }
+            }
             
             const smallSquare = document.querySelector('.small-square');
             const c_board = document.querySelector('.makeboard');
@@ -1473,12 +1557,16 @@
                     smallSquare.style.backgroundColor = 'black';
                     document.querySelector('.blacklist').style.gridRow = 3;
                     document.querySelector('.whitelist').style.gridRow = 1;
+
+                    square_rule.style.rotate='180deg';
                 }
                 else
                 {
                     smallSquare.style.backgroundColor = 'white';
                     document.querySelector('.blacklist').style.gridRow = '';
                     document.querySelector('.whitelist').style.gridRow = '';
+                    
+                    square_rule.style.rotate = '';
                 }
 
                 time_interval = 100;
@@ -1500,11 +1588,15 @@
                     smallSquare.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
                     c_board.style.transform = `rotate(${rotation - 45}deg) scale(0.6)`;
                     
-                    document.querySelectorAll('.square, .box').forEach(div => {
+                    document.querySelectorAll('.square, .box, .bar_container').forEach(div => {
                         div.classList.toggle('rotate_this');
                     });
                     
                     document.querySelector('.flip_board').classList.toggle('flip_board_White');
+                    label_for_switch2.click();
+
+                    bar_text.classList.toggle('rotate_this');
+                    
                 }, 2 * time_interval);
 
                 setTimeout(() => {
@@ -1521,14 +1613,18 @@
 
             function check_flip_board()
             {
+                elo_update();
                 if (rotation % 360 === 180)
                 {
-                    document.querySelectorAll('.square, .box').forEach(div => {
+                    document.querySelectorAll('.box, .bar_container').forEach(div => {
                         if(!(div.classList.contains('rotate_this')))
                         {
                             div.classList.add('rotate_this');
                         }
                     });
+
+                    bar_text.classList.add('rotate_this');
+
                     enemy_elo = document.getElementById('white_elo');
                     player_elo = document.getElementById('black_elo');
                 }
@@ -1540,6 +1636,14 @@
             }
 
             function elo_update() {
+                enemy_elo = document.getElementById('black_elo');
+                player_elo = document.getElementById('white_elo');
+
+                if (rotation % 360 === 180)
+                {
+                    [enemy_elo, player_elo] = [player_elo, enemy_elo];
+                }
+
                 enemy_elo.textContent = (currentValue + 1) * 66 + 1640;
                 player_elo.textContent = ['😁', '😄', '😃', '😀', '😊', '😏', '😎', '🙂', '😶', '😐', '😑', '🙁', '😕', '☹️', '😟', '😩', '😢', '💀'][currentValue];
             }

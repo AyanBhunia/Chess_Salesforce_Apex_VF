@@ -208,7 +208,7 @@ public class Chess {
 
     public static void initialize_board_moves(){
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c,check__c FROM chessBoardMove__c ORDER BY name ASC];
+        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c,check__c FROM chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY name ASC];
 
         if (chess_moves.size()>0) {
             check=new pair((Integer)chess_moves[chess_moves.size()-1].check__c/10,(Integer)chess_moves[chess_moves.size()-1].check__c);
@@ -294,21 +294,21 @@ public class Chess {
     public static list<chessBoardMove__c> previous_moves_data()
     {
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [select row__c ,color__c, check__c,from_x__c,from_y__c,to_x__c,to_y__c from chessBoardMove__c ORDER BY row__c DESC limit 1];
+        chess_moves= [select row__c ,color__c, check__c,from_x__c,from_y__c,to_x__c,to_y__c from chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY row__c DESC limit 1];
 
         return chess_moves;
     }
 
     @RemoteAction
-    public static void back_back()
+    public static String back_back()
     {
         initialize_board();
 
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [SELECT row__c,color__c, from_x__c,from_y__c,to_x__c,to_y__c,capture__c,check__c FROM chessBoardMove__c ORDER BY row__c DESC LIMIT 1];
+        chess_moves= [SELECT row__c,color__c, from_x__c,from_y__c,to_x__c,to_y__c,capture__c,check__c,isDeleted__c FROM chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY row__c DESC LIMIT 1];
         
         if (chess_moves.size()==0) {
-            return;
+            return 'none';
         }
 
         // system.debug((Integer)chess_moves[0].color__c!=0?(Integer)chess_moves[0].capture__c:(Integer)chess_moves[0].capture__c+10);
@@ -321,7 +321,36 @@ public class Chess {
         update chessBoardRecords[(Integer)chess_moves[0].to_x__c];
         update chessBoardRecords[(Integer)chess_moves[0].from_x__c];
 
-        delete chess_moves[0];
+        chess_moves[0].isDeleted__c=1;
+        update chess_moves[0];
+
+        return 'done';
+    }
+
+    @RemoteAction
+    public static String next_next()
+    {
+        initialize_board();
+
+        chess_moves =new list<chessBoardMove__c>();
+        chess_moves= [SELECT row__c,color__c, from_x__c,from_y__c,to_x__c,to_y__c,capture__c,check__c,isDeleted__c FROM chessBoardMove__c WHERE isDeleted__c = 1 ORDER BY row__c ASC LIMIT 1];
+        
+        if (chess_moves.size()==0) {
+            return 'none';
+        }
+
+        // system.debug((Integer)chess_moves[0].color__c!=0?(Integer)chess_moves[0].capture__c:(Integer)chess_moves[0].capture__c+10);
+
+        setValueAt((Integer)chess_moves[0].to_x__c,(Integer)chess_moves[0].to_y__c,getValueAt((Integer)chess_moves[0].from_x__c,(Integer)chess_moves[0].from_y__c));
+        setValueAt((Integer)chess_moves[0].from_x__c,(Integer)chess_moves[0].from_y__c,0);
+
+        update chessBoardRecords[(Integer)chess_moves[0].to_x__c];
+        update chessBoardRecords[(Integer)chess_moves[0].from_x__c];
+
+        chess_moves[0].isDeleted__c=0;
+        update chess_moves[0];
+
+        return 'done';
     }
      
 
@@ -374,7 +403,7 @@ public class Chess {
 
         if(avail_array.contains(new pair(toX,toY)) || avail_2nd_array.contains(new pair(toX,toY)))
         {
-            integer count =[select count() from chessBoardMove__c];
+            integer count =[select count() from chessBoardMove__c WHERE isDeleted__c = 0];
 
             chessBoardMove__c new_move=new chessBoardMove__c();
 
@@ -387,6 +416,7 @@ public class Chess {
             new_move.to_y__c=toY;
             new_move.capture__c=math.mod(board[toX][toY],10);
             new_move.check__c= 0;
+            new_move.isDeleted__c = 0;
 
             setValueAt(toX,toY,getValueAt(fromX,fromY));
             setValueAt(fromX,fromY,0);
@@ -423,6 +453,8 @@ public class Chess {
             
             update chessBoardRecords[tox];
             update chessBoardRecords[fromX];
+
+            delete [SELECT row__c,color__c, from_x__c,from_y__c,to_x__c,to_y__c,capture__c,check__c,isDeleted__c FROM chessBoardMove__c WHERE isDeleted__c = 1];
             insert new_move; 
 
             system.debug('inserted new move'); 
@@ -515,7 +547,7 @@ public class Chess {
     {
         initialize_board();
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [select row__c ,color__c from chessBoardMove__c ORDER BY row__c DESC limit 1];
+        chess_moves= [select row__c ,color__c from chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY row__c DESC limit 1];
 
         String tottal_moves='0';
         Integer color=0;
