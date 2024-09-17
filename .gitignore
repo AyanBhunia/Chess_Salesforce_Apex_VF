@@ -53,6 +53,6 @@ scripts/
 .prettierignore
 .prettierrc
 out.csv
-.xml
+*.xml
 force-app/main/default/aura/
 force-app/main/default/lwc/
