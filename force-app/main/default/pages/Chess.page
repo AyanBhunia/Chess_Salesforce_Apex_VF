@@ -1067,7 +1067,7 @@
             }
 
             function new_window() {
-                window.open("https://ddm000009bfqhuac-dev-ed--c.develop.vf.force.com/apex/Chess", '_blank').focus();
+                window.open(window.location.href, '_blank').focus();
             }
 
             function share()
@@ -1159,9 +1159,7 @@
                 // element.style.height = `${(100 / scaleFactor) * 100}vh`;
             }
 
-            // Adjust scale on page load and window resize
-            window.onload = adjustScaleForElement;
-            window.onresize = adjustScaleForElement;
+            
 
 
         
@@ -1533,6 +1531,7 @@
             }, false);
 
             window.onload = function () {
+                adjustScaleForElement();
                 var stylesheet = document.styleSheets[7];
                 for (var i = 0; i < stylesheet.cssRules.length; i++) {
                     var rule = stylesheet.cssRules[i];
@@ -1543,6 +1542,10 @@
                     }
                 }
             }
+
+            // Adjust scale on page load and window resize
+            // window.onload = adjustScaleForElement;
+            window.onresize = adjustScaleForElement;
             
             const smallSquare = document.querySelector('.small-square');
             const c_board = document.querySelector('.makeboard');
