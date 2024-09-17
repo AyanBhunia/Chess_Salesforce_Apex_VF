@@ -1,21 +1,45 @@
-# Salesforce Chess Project
+# Chess - Salesforce Apex and Visualforce Implementation
 
-Welcome to the Salesforce Chess Project, a chess game developed using Apex and Visualforce for Salesforce.
+This project is a Salesforce-based Chess game developed using **Apex**, **Visualforce Pages**, and **JavaScript**. It includes core chess functionalities such as rendering chess pieces, validating moves, and keeping track of game states, all within the Salesforce platform. The app leverages Salesforce's robust capabilities to create an interactive chessboard while allowing communication between different components through Visualforce remoting and Apex classes.
 
 ## Features
 
-1. Chess Game Mechanics: Standard chess rules with Apex backend.
-2. Dynamic UI: Drag-and-drop interface and real-time updates with Visualforce.
-3. FEN String Sharing: Share board states using FEN notation.
-4. Move History: Track and display previous moves.
+- **Full Chess Gameplay**: Implements all standard chess rules and piece movements.
+- **Dynamic Chessboard Rendering**: The chessboard dynamically renders using Visualforce and JavaScript, providing an interactive UI for players.
+- **Move Validation**: Validates the legality of moves in real-time, ensuring players adhere to chess rules.
+- **Game State Sharing**: Allows sharing the game state using FEN (Forsyth–Edwards Notation) and sending it to other systems via WebSockets.
+- **Apex and SOQL Integration**: Uses Salesforce's server-side logic for handling chess data, SOQL for querying records, and efficient data management.
+- **Responsive UI**: Built with user experience in mind, featuring smooth transitions and responsive design.
 
 ## Installation
 
-You can install the Chess app directly into your Salesforce org using this link.
+To install this package in your Salesforce environment, use the link below:
 
-## Usage
+[Install the Chess App](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tdM0000004RCv&isdtp=p1)
 
-Play the Game: Access the Visualforce page to start playing.
-Interact: Drag and drop pieces, and view move history.
-Contributing
-Contributions are welcome! Fork the repository, make your changes, and submit a pull request.
+## How to Play
+
+1. After installation, navigate to the **Chess** app in your Salesforce org.
+2. The chessboard will render, showing all pieces in their default starting positions.
+3. Play by clicking on a piece and selecting the desired destination. The app will validate the move and update the board accordingly.
+
+## Project Structure
+
+- **Apex Classes**: Handles server-side logic, including move validation and game state management.
+- **Visualforce Pages**: Renders the UI for the chessboard and other components.
+- **JavaScript**: Manages the front-end interactivity, such as piece movement and drag-and-drop functionality.
+- **SOQL Queries**: Used to retrieve and update game-related records in Salesforce.
+
+## Technologies Used
+
+- **Salesforce Apex**: For business logic and server-side processes.
+- **Visualforce**: To create custom UI components.
+- **JavaScript**: For client-side interactivity.
+- **SOQL**: For querying and managing Salesforce data.
+
+## Developer Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/AyanBhunia/Chess_Salesforce_Apex_VF.git

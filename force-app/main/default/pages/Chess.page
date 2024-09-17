@@ -1067,7 +1067,7 @@
             }
 
             function new_window() {
-                window.open(window.location.href, '_blank').focus();
+                window.open(window.location.hostname + window.location.pathname, '_blank').focus();
             }
 
             function share()

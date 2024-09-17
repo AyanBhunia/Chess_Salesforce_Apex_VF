@@ -208,7 +208,7 @@ public class Chess {
 
     public static void initialize_board_moves(){
         chess_moves =new list<chessBoardMove__c>();
-        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c,check__c FROM chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY name ASC];
+        chess_moves= [SELECT row__c,color__c, piece_type__c, text__c,capture__c,check__c FROM chessBoardMove__c WHERE isDeleted__c = 0 ORDER BY row__c ASC];
 
         if (chess_moves.size()>0) {
             check=new pair((Integer)chess_moves[chess_moves.size()-1].check__c/10,(Integer)chess_moves[chess_moves.size()-1].check__c);
