@@ -1,18 +1,21 @@
-# Salesforce DX Project: Next Steps
+# Salesforce Chess Project
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+Welcome to the Salesforce Chess Project, a chess game developed using Apex and Visualforce for Salesforce.
 
-## How Do You Plan to Deploy Your Changes?
+## Features
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+1. Chess Game Mechanics: Standard chess rules with Apex backend.
+2. Dynamic UI: Drag-and-drop interface and real-time updates with Visualforce.
+3. FEN String Sharing: Share board states using FEN notation.
+4. Move History: Track and display previous moves.
 
-## Configure Your Salesforce DX Project
+## Installation
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+You can install the Chess app directly into your Salesforce org using this link.
 
-## Read All About It
+## Usage
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+Play the Game: Access the Visualforce page to start playing.
+Interact: Drag and drop pieces, and view move history.
+Contributing
+Contributions are welcome! Fork the repository, make your changes, and submit a pull request.
