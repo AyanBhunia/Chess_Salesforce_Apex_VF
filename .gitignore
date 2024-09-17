@@ -43,3 +43,16 @@ $RECYCLE.BIN/
 **/__pycache__/
 **/.venv/
 **/venv/
+
+# Ignore all this
+.husky/
+.vscode/
+config/
+scripts/
+.forceignore
+.prettierignore
+.prettierrc
+out.csv
+.xml
+force-app/main/default/aura/
+force-app/main/default/lwc/
