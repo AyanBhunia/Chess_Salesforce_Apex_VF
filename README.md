@@ -15,7 +15,10 @@ This project is a Salesforce-based Chess game developed using **Apex**, **Visual
 
 You can try the game directly, without any login or setup, by visiting this link:
 
-[Play Chess on Salesforce](https://dqy00000brzl7map-dev-ed.develop.my.salesforce-sites.com/Chess)
+[Play Chess on Salesforce](https://ddm000009bfqhuac-dev-ed.develop.my.salesforce-sites.com/)
+
+<img width="1443" height="927" alt="image" src="https://github.com/user-attachments/assets/f3e68f1c-f6d3-4c8d-9553-ed16c197dac3" />
+
 
 ## Installation
 
